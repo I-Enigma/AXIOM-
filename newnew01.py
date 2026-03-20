@@ -14,7 +14,8 @@ from openpyxl.utils import get_column_letter
 # ── Configuration ─────────────────────────────────────────
 PROFILES_FILE    = "face_profiles.json"
 ATTENDANCE_FILE  = "attendance.xlsx"
-MATCH_THRESHOLD  = 0.06
+MATCH_THRESHOLD         = 0.14   # maximum slack for extreme corners like Left+Up
+MATCH_THRESHOLD_FRONTAL = 0.04   # frontal — MUCH tighter to avoid false positives
 UNKNOWN_COOLDOWN = 10
 
 # Confirmation: face must be held steady for this many seconds
@@ -26,18 +27,53 @@ VOTE_REQUIRE     = 7
 mp_face_mesh = mp.solutions.face_mesh
 
 # ── Ratio weights (stable ratios count more) ───────────────
+# Used for frontal faces
 RATIO_WEIGHTS = {
-    "golden_ratio"     : 1.0,
-    "eye_ratio"        : 1.4,
-    "inner_eye_ratio"  : 1.4,
-    "nose_ratio"       : 1.0,
-    "lip_ratio"        : 0.8,
-    "jaw_ratio"        : 0.9,
-    "brow_ratio"       : 0.7,
-    "nose_width_ratio" : 1.2,
-    "fWHR"             : 0.8,
+    "golden_ratio"      : 1.0,
+    "eye_ratio"         : 1.4,
+    "inner_eye_ratio"   : 1.4,
+    "nose_ratio"        : 1.0,
+    "lip_ratio"         : 0.8,
+    "jaw_ratio"         : 0.9,
+    "brow_ratio"        : 0.7,
+    "nose_width_ratio"  : 1.2,
+    "fWHR"              : 0.8,
+    "eye_height_ratio"  : 1.1,
+    "philtrum_ratio"    : 0.9,
+    "chin_width_ratio"  : 1.0,
+    "cheekbone_ratio"   : 1.0,
+    "temple_ratio"      : 0.8,
+    "nose_bridge_ratio" : 1.1,
+    "mouth_height_ratio": 0.7,
+    "nose_length_ratio" : 1.0,
+    "nose_base_ratio"   : 1.1,
 }
-SYMMETRY_WEIGHT = 0.6
+
+# Used for tilted faces — heavily down-weights ratios that shift with head turn.
+# face_width, jaw_ratio, brow_ratio, cheekbone_ratio, fWHR all change when
+# the head rotates because one side of the face becomes foreshortened.
+# Ratios that stay stable: eye_height, nose_length, philtrum, inner eye distance.
+TILTED_RATIO_WEIGHTS = {
+    "golden_ratio"      : 0.5,   # face_width changes on turn — unreliable
+    "eye_ratio"         : 0.8,   # outer eye points shift on turn
+    "inner_eye_ratio"   : 1.4,   # inner corners more stable
+    "nose_ratio"        : 1.2,   # nose-to-chin mostly stable
+    "lip_ratio"         : 0.5,   # lip width foreshortens
+    "jaw_ratio"         : 0.4,   # jaw foreshortens heavily
+    "brow_ratio"        : 0.4,   # brow width foreshortens
+    "nose_width_ratio"  : 0.9,   # nostril width reasonably stable
+    "fWHR"              : 0.3,   # very pose-sensitive — nearly ignore
+    "eye_height_ratio"  : 1.3,   # eye height doesn't change with yaw
+    "philtrum_ratio"    : 1.2,   # philtrum length stable
+    "chin_width_ratio"  : 0.5,   # foreshortens
+    "cheekbone_ratio"   : 0.4,   # heavily affected by yaw
+    "temple_ratio"      : 0.4,   # foreshortens
+    "nose_bridge_ratio" : 1.0,   # bridge width stable
+    "mouth_height_ratio": 0.7,
+    "nose_length_ratio" : 1.3,   # nose length very stable across yaw
+    "nose_base_ratio"   : 1.1,
+}
+SYMMETRY_WEIGHT = 0.8
 
 # ── Facial Geometry ───────────────────────────────────────
 
@@ -76,26 +112,62 @@ def check_pose_quality(landmarks, w, h):
     return True
 
 def extract_profile(landmarks, w, h):
+    """
+    Extracts 14 facial geometry ratios + symmetry score.
+    All measurements are normalised by face_width or face_height
+    so they are scale- and distance-independent.
+
+    New landmarks added (Fix #4):
+      - eye_height_ratio : how tall each eye is — very person-specific
+      - philtrum_ratio   : nose-tip to upper lip, normalised by face height
+      - chin_width_ratio : narrow vs wide chin shape
+      - cheekbone_ratio  : cheekbone prominence relative to face width
+      - temple_ratio     : forehead width at temple level
+    """
     def pt(i): return get_pt(landmarks, i, w, h)
 
-    forehead    = pt(10)
-    chin        = pt(152)
-    left_cheek  = pt(234)
-    right_cheek = pt(454)
-    nose_tip    = pt(1)
-    left_eye_o  = pt(33)
-    right_eye_o = pt(263)
-    left_eye_i  = pt(133)
-    right_eye_i = pt(362)
-    left_lip    = pt(61)
-    right_lip   = pt(291)
-    left_jaw    = pt(172)
-    right_jaw   = pt(397)
-    left_brow   = pt(70)
-    right_brow  = pt(300)
+    forehead     = pt(10)
+    chin         = pt(152)
+    left_cheek   = pt(234)
+    right_cheek  = pt(454)
+    nose_tip     = pt(1)
+    left_eye_o   = pt(33)
+    right_eye_o  = pt(263)
+    left_eye_i   = pt(133)
+    right_eye_i  = pt(362)
+    left_lip     = pt(61)
+    right_lip    = pt(291)
+    left_jaw     = pt(172)
+    right_jaw    = pt(397)
+    left_brow    = pt(70)
+    right_brow   = pt(300)
+    # Existing extra landmarks
+    upper_lip    = pt(13)
+    left_eye_top = pt(159)
+    left_eye_bot = pt(145)
+    left_temple  = pt(162)
+    right_temple = pt(389)
+    left_cheekb  = pt(116)
+    right_cheekb = pt(345)
+    chin_left    = pt(136)
+    chin_right   = pt(365)
+    # New landmarks (issue 4)
+    nose_bridge  = pt(6)    # top of nose bridge — stable bone point
+    left_nostril = pt(129)
+    right_nostril= pt(358)
+    lower_lip    = pt(17)   # bottom of lower lip
+    mouth_top    = pt(0)    # top of mouth opening
+    mouth_bot    = pt(17)   # bottom of mouth opening (same as lower_lip, used for height)
+    left_brow_i  = pt(107)  # inner brow left
+    right_brow_i = pt(336)  # inner brow right
+    nose_base    = pt(94)   # base of nose between nostrils
 
     face_height    = euclidean(forehead, chin)
     face_width     = euclidean(left_cheek, right_cheek)
+
+    if face_width == 0 or face_height == 0:
+        return None
+
     eye_distance   = euclidean(left_eye_o, right_eye_o)
     inner_eye_dist = euclidean(left_eye_i, right_eye_i)
     nose_to_chin   = euclidean(nose_tip, chin)
@@ -103,30 +175,53 @@ def extract_profile(landmarks, w, h):
     jaw_width      = euclidean(left_jaw, right_jaw)
     brow_width     = euclidean(left_brow, right_brow)
     nose_width     = euclidean(pt(129), pt(358))
+    # New measurements (issue 4)
+    eye_height      = euclidean(left_eye_top, left_eye_bot)
+    philtrum        = euclidean(nose_tip, upper_lip)
+    chin_width      = euclidean(chin_left, chin_right)
+    cheekbone_w     = euclidean(left_cheekb, right_cheekb)
+    temple_w        = euclidean(left_temple, right_temple)
+    nose_bridge_w   = euclidean(left_brow_i, right_brow_i)   # brow-to-brow gap (proxies bridge)
+    mouth_height    = euclidean(upper_lip, lower_lip)         # how open/tall the mouth region is
+    nose_length     = euclidean(nose_bridge, nose_tip)        # nose bridge to tip length
+    nose_base_w     = euclidean(left_nostril, right_nostril)  # nostril width
+    brow_inner_gap  = euclidean(left_brow_i, right_brow_i)    # inner brow separation
 
-    if face_width == 0 or face_height == 0:
-        return None
-
+    # Symmetry: how evenly balanced left/right landmarks are around nose centre
     nose_center  = pt(1)
-    mirror_pairs = [(33,263),(130,359),(234,454),(61,291),(70,300),(172,397)]
+    mirror_pairs = [(33,263),(130,359),(234,454),(61,291),(70,300),(172,397),
+                    (116,345),(162,389),(136,365),(107,336),(129,358)]
     diffs = []
     for l, r in mirror_pairs:
         lp = pt(l)
         rp = pt(r)
         diffs.append(abs(abs(lp[0]-nose_center[0]) - abs(rp[0]-nose_center[0])))
-    symmetry = max(0, 1-(np.mean(diffs)/face_width)) * 100
+    symmetry = max(0, 1 - (np.mean(diffs) / face_width)) * 100
 
     return {
-        "golden_ratio"     : round(face_height / face_width, 4),
-        "eye_ratio"        : round(eye_distance / face_width, 4),
-        "inner_eye_ratio"  : round(inner_eye_dist / face_width, 4),
-        "nose_ratio"       : round(nose_to_chin / face_height, 4),
-        "lip_ratio"        : round(lip_width / face_width, 4),
-        "jaw_ratio"        : round(jaw_width / face_width, 4),
-        "brow_ratio"       : round(brow_width / face_width, 4),
-        "nose_width_ratio" : round(nose_width / face_width, 4),
-        "fWHR"             : round(face_width / (face_height/2), 4),
-        "symmetry"         : round(symmetry, 2),
+        # Original ratios
+        "golden_ratio"      : round(face_height / face_width, 4),
+        "eye_ratio"         : round(eye_distance / face_width, 4),
+        "inner_eye_ratio"   : round(inner_eye_dist / face_width, 4),
+        "nose_ratio"        : round(nose_to_chin / face_height, 4),
+        "lip_ratio"         : round(lip_width / face_width, 4),
+        "jaw_ratio"         : round(jaw_width / face_width, 4),
+        "brow_ratio"        : round(brow_width / face_width, 4),
+        "nose_width_ratio"  : round(nose_width / face_width, 4),
+        "fWHR"              : round(face_width / (face_height / 2), 4),
+        # Previous extra ratios
+        "eye_height_ratio"  : round(eye_height / face_height, 4),
+        "philtrum_ratio"    : round(philtrum / face_height, 4),
+        "chin_width_ratio"  : round(chin_width / face_width, 4),
+        "cheekbone_ratio"   : round(cheekbone_w / face_width, 4),
+        "temple_ratio"      : round(temple_w / face_width, 4),
+        # New ratios (issue 4)
+        "nose_bridge_ratio" : round(nose_bridge_w / face_width, 4),
+        "mouth_height_ratio": round(mouth_height / face_height, 4),
+        "nose_length_ratio" : round(nose_length / face_height, 4),
+        "nose_base_ratio"   : round(nose_base_w / face_width, 4),
+        # Symmetry
+        "symmetry"          : round(symmetry, 2),
     }
 
 def build_robust_profile(profiles):
@@ -140,36 +235,133 @@ def build_robust_profile(profiles):
         std_profile[key] = round(float(np.std(values)), 4)
     return avg_profile, std_profile
 
-def compare_profiles(stored, live, stored_std=None):
+def _nearest_zone_profiles(stored_person, live_yaw, live_pitch):
+    """
+    Instead of only using the exact matched zone, collect up to 3 nearest
+    registered zone profiles sorted by angular distance from the live pose.
+    This means even if the face is between zones, we always have something
+    meaningful to compare against.
+    Returns list of (distance, zone_label, profile_dict, std_dict).
+    """
+    candidates = []
+
+    zone_profiles = stored_person.get("zone_profiles", {})
+
+    for i, (label, _l1, _l2, y0, y1, p0, p1) in enumerate(CAPTURE_ZONES):
+        # Zone centre
+        cy = (y0 + y1) / 2
+        cp = (p0 + p1) / 2
+        dist = (live_yaw - cy) ** 2 + (live_pitch - cp) ** 2
+
+        if label in zone_profiles:
+            zp  = zone_profiles[label]["profile"]
+            zstd = zone_profiles[label].get("std")
+        else:
+            # Zone not in per-zone profiles — use global as fallback
+            zp   = stored_person["profile"]
+            zstd = stored_person.get("std")
+
+        candidates.append((dist, label, zp, zstd))
+
+    # Sort by distance — closest zone first
+    candidates.sort(key=lambda x: x[0])
+    return candidates[:3]   # top 3 nearest zones
+
+
+def _ratio_score(stored, live, std_dev, weights):
+    """
+    Compute weighted average difference between stored and live profile.
+    Returns (avg_diff, total_weight).
+    """
     weighted_diffs = []
     total_weight   = 0.0
 
-    for key, weight in RATIO_WEIGHTS.items():
+    for key, weight in weights.items():
         ref = stored.get(key, 0)
-        if ref == 0:
+        liv = live.get(key, 0)
+        if ref == 0 or liv == 0:
             continue
-        raw_diff = abs(ref - live[key]) / ref
+        raw_diff = abs(ref - liv) / ref
 
-        if stored_std and stored_std.get(key, 0) > 0:
-            tolerance_factor = 1 + (stored_std[key] / ref) * 3
-            raw_diff /= tolerance_factor
+        # Adaptive tolerance: if this ratio was variable during registration,
+        # give more slack (up to 4× tolerance)
+        if std_dev and std_dev.get(key, 0) > 0:
+            tol = 1 + (std_dev[key] / ref) * 4
+            raw_diff /= tol
 
         weighted_diffs.append(raw_diff * weight)
         total_weight += weight
 
-    sym_stored = stored.get("symmetry", 50)
-    sym_live   = live.get("symmetry", 50)
-    if sym_stored > 0:
-        sym_diff = abs(sym_stored - sym_live) / 100
+    # Symmetry
+    sym_ref = stored.get("symmetry", 50)
+    sym_liv = live.get("symmetry", 50)
+    if sym_ref > 0:
+        sym_diff = abs(sym_ref - sym_liv) / 100.0
         weighted_diffs.append(sym_diff * SYMMETRY_WEIGHT)
         total_weight += SYMMETRY_WEIGHT
 
     if total_weight == 0:
-        return 0, False
+        return 1.0, 0.0
 
-    avg_diff    = sum(weighted_diffs) / total_weight
-    match_score = round(max(0, 1 - avg_diff) * 100, 2)
-    is_match    = avg_diff < MATCH_THRESHOLD
+    return sum(weighted_diffs) / total_weight, total_weight
+
+
+def compare_profiles(stored_person, live_profile, live_yaw=None, live_pitch=None):
+    """
+    Robust multi-zone matching strategy:
+
+    1.  Find the 3 nearest registered zone profiles by angular distance —
+        not just the exact zone the face falls in.  This eliminates UNKNOWN
+        flashes when the head is between zone boundaries.
+
+    2.  Score against each of the 3 candidates, weighting by:
+          a. How close the zone is angularly  (closer = higher weight)
+          b. Whether the face is frontal or tilted (controls which ratio
+             weights to use — tilted ignores foreshortening-sensitive ratios)
+
+    3.  Take a distance-weighted blend of the 3 scores as the final score.
+        This smooths out the sharp boundary effect where crossing a zone
+        line by 1 pixel used to flip from 92% match to UNKNOWN.
+
+    4.  Dynamic threshold:
+          - Frontal     : 0.06  (tight)
+          - Slight tilt : 0.09  (medium)
+          - Heavy tilt  : 0.12  (loose — many ratios foreshorten)
+        Threshold scales continuously with |yaw| so there's no cliff edge.
+    """
+    yaw   = live_yaw   if live_yaw   is not None else 0.0
+    pitch = live_pitch if live_pitch is not None else 0.0
+
+    # How tilted is the face right now?
+    tilt_magnitude = (yaw ** 2 + pitch ** 2) ** 0.5
+
+    # Threshold scales smoothly from frontal threshold to tilted threshold
+    # The 0.4 multiplier ensures extreme tilts reach the max MATCH_THRESHOLD
+    threshold = MATCH_THRESHOLD_FRONTAL + min(tilt_magnitude * 0.4, MATCH_THRESHOLD - MATCH_THRESHOLD_FRONTAL)
+
+    # Choose weights based on tilt
+    weights = RATIO_WEIGHTS if tilt_magnitude < 0.12 else TILTED_RATIO_WEIGHTS
+
+    # Get up to 3 nearest zone profiles
+    candidates = _nearest_zone_profiles(stored_person, yaw, pitch)
+
+    # Score each candidate and blend by inverse angular distance
+    blended_diff  = 0.0
+    blend_weight  = 0.0
+
+    for angular_dist, zone_label, zprofile, zstd in candidates:
+        diff, _ = _ratio_score(zprofile, live_profile, zstd, weights)
+
+        # Weight this candidate inversely by angular distance from the live pose
+        # Add small epsilon to avoid division by zero when perfectly on-centre
+        inv_dist = 1.0 / (angular_dist + 0.001)
+        blended_diff += diff * inv_dist
+        blend_weight += inv_dist
+
+    avg_diff    = blended_diff / blend_weight if blend_weight > 0 else 1.0
+    match_score = round(max(0.0, 1.0 - avg_diff) * 100, 2)
+    is_match    = avg_diff < threshold
+
     return match_score, is_match
 
 # ── Profile Storage ───────────────────────────────────────
@@ -299,25 +491,62 @@ def append_attendance_row(filepath, sheet_name, name, status, score, confirm_sec
     return False
 
 # ── Angle detection helpers ───────────────────────────────
+#
+# FIX 1 — Added missing Right+Down zone (was completely absent before).
+# FIX 2 — Zones now overlap by 0.03 on each boundary so there are no
+#          dead gaps between tiles where no zone triggers.
+# FIX 4 — Widened all yaw ranges from ±0.14 to ±0.28 and pitch ranges
+#          from ±0.14 to ±0.22 to match real comfortable head movements.
+#
+# Each zone: (short_label, line1, line2, yaw_min, yaw_max, pitch_min, pitch_max)
+# yaw   > 0 = turned right,  < 0 = turned left
+# pitch > 0 = chin up,       < 0 = chin down
 
-# Each zone: (short_label, instruction_line1, instruction_line2, yaw_min, yaw_max, pitch_min, pitch_max)
-# yaw > 0 = turned right, < 0 = turned left
-# pitch > 0 = chin up,    < 0 = chin down
 CAPTURE_ZONES = [
-    ("Front",        "Face the camera",        "look straight ahead",  -0.08,  0.08, -0.08,  0.08),
-    ("Left",         "Turn your head",          "slightly to the LEFT", -0.22, -0.08, -0.08,  0.08),
-    ("Right",        "Turn your head",          "slightly to the RIGHT", 0.08,  0.22, -0.08,  0.08),
-    ("Up",           "Tilt your chin",          "slightly UPWARD",      -0.08,  0.08,  0.08,  0.22),
-    ("Down",         "Tilt your chin",          "slightly DOWNWARD",    -0.08,  0.08, -0.22, -0.08),
-    ("Left+Up",      "Turn LEFT and",           "tilt chin UP",         -0.22, -0.08,  0.08,  0.22),
-    ("Right+Up",     "Turn RIGHT and",          "tilt chin UP",          0.08,  0.22,  0.08,  0.22),
-    ("Left+Down",    "Turn LEFT and",           "tilt chin DOWN",       -0.22, -0.08, -0.22, -0.08),
+    # label        instruction line 1          line 2
+    # yaw > 0 = YOUR right (nose moves right in mirror = left on screen)
+    # yaw < 0 = YOUR left
+    # Note: yaw is already negated in get_face_angles() so positive = YOUR right
+    ("Front",      "Face the camera",          "look straight ahead",    -0.10,  0.10, -0.10,  0.10),
+    ("Your Left",  "Turn YOUR head",           "to YOUR LEFT",           -0.38, -0.09, -0.10,  0.10),
+    ("Your Right", "Turn YOUR head",           "to YOUR RIGHT",           0.09,  0.38, -0.10,  0.10),
+    ("Up",         "Tilt your chin",           "slightly UPWARD",        -0.10,  0.10,  0.09,  0.28),
+    ("Down",       "Tilt your chin",           "slightly DOWNWARD",      -0.10,  0.10, -0.28, -0.09),
+    ("Left+Up",    "Turn YOUR LEFT and",       "tilt chin UP",           -0.38, -0.09,  0.09,  0.28),
+    ("Right+Up",   "Turn YOUR RIGHT and",      "tilt chin UP",            0.09,  0.38,  0.09,  0.28),
+    ("Left+Down",  "Turn YOUR LEFT and",       "tilt chin DOWN",         -0.38, -0.09, -0.28, -0.09),
+    ("Right+Down", "Turn YOUR RIGHT and",      "tilt chin DOWN",          0.09,  0.38, -0.28, -0.09),
 ]
-SAMPLES_PER_ZONE = 5   # 8 zones × 5 = 40 total
+SAMPLES_PER_ZONE  = 8    # 9 zones × 8 = 72 total — richer coverage
+ZONE_SAMPLE_DELAY = 0.3  # seconds between accepted samples per zone (forces diversity)
 
 
 def get_face_angles(landmarks, w, h):
-    """Returns (yaw, pitch) as normalised ratios."""
+    """
+    FIX 3 — Completely rewritten pitch calculation.
+
+    OLD (broken):
+        pitch = (nose_y - eye_mid_y) / face_height
+        Problem: eye_mid is near the vertical centre of the face,
+        so this ratio is tiny and changes very little when you tilt.
+        When you look down, face_height also shrinks, making it
+        even less reliable.
+
+    NEW (fixed):
+        yaw   = (nose_x - eye_mid_x) / eye_distance
+                  — how far left/right the nose has shifted
+                    relative to the eye width. Stable and clear.
+        pitch = (chin_y - nose_y) / (chin_y - forehead_y)
+                  — how close the chin is to the nose as a fraction
+                    of total face height. When you tilt UP your chin
+                    moves AWAY from your nose (ratio rises). When you
+                    tilt DOWN your chin comes CLOSER (ratio falls).
+                    We subtract 0.5 to centre it around zero.
+
+    FIX 5 — Uses chin-to-nose distance normalised by full face height.
+    This is stable even when face foreshortens on down-tilt because
+    both the numerator and denominator shrink together.
+    """
     def pt(i):
         lm = landmarks[i]
         return (lm.x * w, lm.y * h)
@@ -328,105 +557,127 @@ def get_face_angles(landmarks, w, h):
     chin     = pt(152)
     forehead = pt(10)
 
-    eye_mid  = ((l_eye[0] + r_eye[0]) / 2, (l_eye[1] + r_eye[1]) / 2)
-    eye_dist = abs(r_eye[0] - l_eye[0])
-    face_h   = abs(chin[1] - forehead[1])
+    eye_mid_x = (l_eye[0] + r_eye[0]) / 2
+    eye_dist  = abs(r_eye[0] - l_eye[0])
+    face_h    = abs(chin[1] - forehead[1])
 
-    yaw   = (nose[0] - eye_mid[0]) / eye_dist if eye_dist > 0 else 0
-    pitch = (nose[1] - eye_mid[1]) / face_h   if face_h  > 0 else 0
+    # Yaw: nose horizontal offset from eye centre, scaled by eye width.
+    # NEGATED (Fix #3) so that YOUR left turn = negative yaw,
+    # YOUR right turn = positive yaw. Without negation the camera
+    # mirror would flip left and right from your perspective.
+    yaw = -((nose[0] - eye_mid_x) / eye_dist) if eye_dist > 0 else 0
+
+    # Pitch: chin-to-nose vertical gap as fraction of face height, centred at 0
+    # Neutral face: chin_y - nose_y ≈ 0.5 * face_h  → pitch ≈ 0.0
+    # Chin up:      gap grows → pitch positive
+    # Chin down:    gap shrinks → pitch negative
+    chin_nose_gap = chin[1] - nose[1]
+    pitch = ((chin_nose_gap / face_h) - 0.5) if face_h > 0 else 0
 
     return round(yaw, 3), round(pitch, 3)
 
 
 def classify_zone(yaw, pitch):
-    """Return index of matching zone, or None."""
+    """
+    Returns the BEST matching zone when multiple overlap,
+    picking the one whose centre is closest to the measured angle.
+    """
+    best_idx  = None
+    best_dist = float("inf")
+
     for i, (_, _l1, _l2, y0, y1, p0, p1) in enumerate(CAPTURE_ZONES):
         if y0 <= yaw <= y1 and p0 <= pitch <= p1:
-            return i
-    return None
+            cy   = (y0 + y1) / 2
+            cp   = (p0 + p1) / 2
+            dist = (yaw - cy) ** 2 + (pitch - cp) ** 2
+            if dist < best_dist:
+                best_dist = dist
+                best_idx  = i
+
+    return best_idx
 
 
-def draw_registration_hud(frame, name, zone_buckets, current_zone_idx, next_zone_idx):
+def draw_registration_hud(frame, name, zone_buckets, current_zone_idx,
+                          next_zone_idx, yaw=None, pitch=None):
     """
-    Full registration HUD:
-      - Top bar:  name + live capture status
-      - Middle:   big centred "NEXT ANGLE" instruction (only when needed)
-      - Bottom strip: 8 zone pills in a single row
-      - Very bottom: key hints
+    Full registration HUD with live yaw/pitch debug readout.
     """
     h, w = frame.shape[:2]
-    zone_counts   = [len(b) for b in zone_buckets]
-    total_needed  = len(CAPTURE_ZONES) * SAMPLES_PER_ZONE
-    total_done    = sum(zone_counts)
+    zone_counts    = [len(b) for b in zone_buckets]
+    total_needed   = len(CAPTURE_ZONES) * SAMPLES_PER_ZONE
+    total_done     = sum(zone_counts)
     zones_complete = sum(1 for c in zone_counts if c >= SAMPLES_PER_ZONE)
 
-    # ── TOP BAR (name + progress bar) ────────────────────
+    # ── TOP BAR ───────────────────────────────────────────
     cv2.rectangle(frame, (0, 0), (w, 54), (18, 18, 18), cv2.FILLED)
     cv2.putText(frame, f"Registering: {name}",
                 (10, 22), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 215, 60), 2)
     prog_label = f"{total_done}/{total_needed} samples   {zones_complete}/{len(CAPTURE_ZONES)} zones"
     cv2.putText(frame, prog_label,
                 (10, 44), cv2.FONT_HERSHEY_SIMPLEX, 0.48, (160, 160, 160), 1)
-    # progress bar
+
+    # Progress bar (top-right)
     bar_x1, bar_y1, bar_x2, bar_y2 = w - 160, 10, w - 10, 24
     cv2.rectangle(frame, (bar_x1, bar_y1), (bar_x2, bar_y2), (50, 50, 50), cv2.FILLED)
     filled = int((bar_x2 - bar_x1) * total_done / total_needed)
     if filled > 0:
-        cv2.rectangle(frame, (bar_x1, bar_y1), (bar_x1 + filled, bar_y2), (0, 200, 100), cv2.FILLED)
-    pct_text = f"{int(100 * total_done / total_needed)}%"
-    cv2.putText(frame, pct_text, (bar_x1 + 2, bar_y2 - 2),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.38, (220, 255, 220), 1)
+        cv2.rectangle(frame, (bar_x1, bar_y1), (bar_x1 + filled, bar_y2),
+                      (0, 200, 100), cv2.FILLED)
+    cv2.putText(frame, f"{int(100 * total_done / total_needed)}%",
+                (bar_x1 + 2, bar_y2 - 2), cv2.FONT_HERSHEY_SIMPLEX,
+                0.38, (220, 255, 220), 1)
 
-    # ── CENTRE INSTRUCTION (next pending zone) ────────────
-    # Show only when user is NOT currently in the right zone
-    if next_zone_idx is not None and current_zone_idx != next_zone_idx:
-        _, line1, line2, *_ = CAPTURE_ZONES[next_zone_idx]
-        box_y = h // 2 - 52
-        cv2.rectangle(frame, (w//2 - 200, box_y), (w//2 + 200, box_y + 80),
-                      (10, 10, 40), cv2.FILLED)
-        cv2.rectangle(frame, (w//2 - 200, box_y), (w//2 + 200, box_y + 80),
-                      (60, 100, 200), 1)
-        cv2.putText(frame, line1,
-                    (w//2 - 190, box_y + 28),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.72, (200, 220, 255), 2)
-        cv2.putText(frame, line2,
-                    (w//2 - 190, box_y + 62),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.72, (100, 200, 255), 2)
+    # ── DEBUG READOUT (live yaw / pitch) ──────────────────
+    # Shows the raw numbers so you can see exactly what the camera
+    # is measuring as you move your head.
+    if yaw is not None and pitch is not None:
+        dbg = f"yaw={yaw:+.3f}  pitch={pitch:+.3f}"
+        # Colour: green if inside some zone, orange if in dead-space
+        dbg_color = (0, 220, 120) if current_zone_idx is not None else (0, 140, 255)
+        cv2.putText(frame, dbg, (w - 260, 44),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.44, dbg_color, 1)
 
     # ── LIVE CAPTURE FLASH ────────────────────────────────
-    # When currently capturing the active zone, show a bright flash label
+    # ALL guidance is in this single strip — nothing drawn over the face
+    flash_y = 58
     if current_zone_idx is not None:
         count = zone_counts[current_zone_idx]
         done  = count >= SAMPLES_PER_ZONE
         if done:
-            flash_text  = f"  {CAPTURE_ZONES[current_zone_idx][0]} done!"
-            flash_color = (0, 230, 80)
+            if next_zone_idx is not None and next_zone_idx != current_zone_idx:
+                _, nline1, nline2, *_ = CAPTURE_ZONES[next_zone_idx]
+                flash_text = f"  Done!  Now: {nline1} {nline2}"
+                flash_color, flash_bg = (60, 220, 255), (0, 30, 40)
+            else:
+                flash_text = "  All zones complete!  Press S to save."
+                flash_color, flash_bg = (60, 255, 120), (0, 40, 0)
         else:
-            flash_text  = f"  Capturing {CAPTURE_ZONES[current_zone_idx][0]}  {count}/{SAMPLES_PER_ZONE}"
-            flash_color = (0, 210, 160)
-        # Solid bar across the top-centre so it's impossible to miss
-        flash_y = 58
-        cv2.rectangle(frame, (0, flash_y), (w, flash_y + 34), (0, 30, 20), cv2.FILLED)
-        cv2.putText(frame, flash_text,
-                    (10, flash_y + 24),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.72, flash_color, 2)
+            flash_text  = f"  Capturing {CAPTURE_ZONES[current_zone_idx][0]}  {count}/{SAMPLES_PER_ZONE}  — hold this angle"
+            flash_color, flash_bg = (0, 215, 160), (0, 28, 18)
+        cv2.rectangle(frame, (0, flash_y), (w, flash_y + 36), flash_bg, cv2.FILLED)
+        cv2.putText(frame, flash_text, (10, flash_y + 26),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.62, flash_color, 2)
     else:
-        # No face / no zone — show a plain prompt
-        flash_y = 58
-        cv2.rectangle(frame, (0, flash_y), (w, flash_y + 34), (30, 10, 10), cv2.FILLED)
-        cv2.putText(frame, "  Position your face in the camera",
-                    (10, flash_y + 24),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.62, (80, 80, 200), 2)
+        if next_zone_idx is not None:
+            _, nline1, nline2, *_ = CAPTURE_ZONES[next_zone_idx]
+            flash_text  = f"  {nline1} {nline2}"
+            flash_color, flash_bg = (120, 180, 255), (10, 10, 35)
+        else:
+            flash_text  = "  Position your face in the camera"
+            flash_color, flash_bg = (100, 100, 200), (25, 10, 10)
+        cv2.rectangle(frame, (0, flash_y), (w, flash_y + 36), flash_bg, cv2.FILLED)
+        cv2.putText(frame, flash_text, (10, flash_y + 26),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.62, flash_color, 2)
 
     # ── BOTTOM ZONE PILLS ─────────────────────────────────
-    strip_h    = 44
-    strip_y    = h - strip_h - 26   # leave room for key hints below
+    strip_h  = 40
+    strip_y  = h - strip_h - 24
     cv2.rectangle(frame, (0, strip_y - 4), (w, strip_y + strip_h + 4),
                   (18, 18, 18), cv2.FILLED)
 
-    n          = len(CAPTURE_ZONES)
-    pill_w     = (w - 16) // n
-    pill_gap   = 2
+    n        = len(CAPTURE_ZONES)
+    pill_w   = (w - 16) // n
+    pill_gap = 2
 
     for i, (short_label, *_) in enumerate(CAPTURE_ZONES):
         count   = zone_counts[i]
@@ -437,55 +688,50 @@ def draw_registration_hud(frame, name, zone_buckets, current_zone_idx, next_zone
         px = 8 + i * pill_w
         py = strip_y
 
-        # Pill background
         if done:
-            bg = (0, 70, 0)
-            border = (0, 180, 60)
+            bg, border = (0, 70, 0),   (0, 180, 60)
         elif active:
-            bg = (0, 50, 60)
-            border = (0, 200, 160)
+            bg, border = (0, 50, 60),  (0, 200, 160)
         elif is_next:
-            bg = (40, 30, 0)
-            border = (200, 160, 0)
+            bg, border = (40, 30, 0),  (200, 160, 0)
         else:
-            bg = (30, 30, 30)
-            border = (70, 70, 70)
+            bg, border = (30, 30, 30), (70, 70, 70)
 
-        cv2.rectangle(frame, (px, py), (px + pill_w - pill_gap, py + strip_h), bg, cv2.FILLED)
-        cv2.rectangle(frame, (px, py), (px + pill_w - pill_gap, py + strip_h), border, 1)
+        cv2.rectangle(frame, (px, py), (px + pill_w - pill_gap, py + strip_h),
+                      bg, cv2.FILLED)
+        cv2.rectangle(frame, (px, py), (px + pill_w - pill_gap, py + strip_h),
+                      border, 1)
 
-        # Zone short label — centred in pill
-        label_scale = 0.38
-        (lw, lh), _ = cv2.getTextSize(short_label, cv2.FONT_HERSHEY_SIMPLEX, label_scale, 1)
+        label_scale = 0.35
+        (lw, _), _  = cv2.getTextSize(short_label, cv2.FONT_HERSHEY_SIMPLEX, label_scale, 1)
         lx = px + (pill_w - pill_gap - lw) // 2
+
         if done:
             lbl_color = (100, 255, 120)
-            cv2.putText(frame, "OK", (lx + 4, py + 16),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.38, (60, 200, 80), 1)
-        elif is_next:
-            lbl_color = (255, 200, 60)
-        elif active:
-            lbl_color = (80, 230, 200)
+            cv2.putText(frame, "OK", (lx + 2, py + 14),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.35, (60, 200, 80), 1)
         else:
-            lbl_color = (100, 100, 100)
+            lbl_color = (255, 200, 60) if is_next else \
+                        ((80, 230, 200) if active else (100, 100, 100))
 
-        cv2.putText(frame, short_label, (lx, py + 16 if done else py + 16),
+        cv2.putText(frame, short_label, (lx, py + 14),
                     cv2.FONT_HERSHEY_SIMPLEX, label_scale, lbl_color, 1)
 
-        # Mini count bar at bottom of pill
+        # Mini fill bar
         bar_py = py + strip_h - 7
-        cv2.rectangle(frame, (px + 2, bar_py), (px + pill_w - pill_gap - 2, bar_py + 5),
+        cv2.rectangle(frame, (px + 2, bar_py),
+                      (px + pill_w - pill_gap - 2, bar_py + 5),
                       (50, 50, 50), cv2.FILLED)
         filled_w = int((pill_w - pill_gap - 4) * min(count / SAMPLES_PER_ZONE, 1.0))
-        bar_col  = (0, 180, 60) if done else ((0, 180, 160) if active else (100, 100, 40))
+        bar_col  = (0, 180, 60) if done else \
+                   ((0, 180, 160) if active else (100, 100, 40))
         if filled_w > 0:
-            cv2.rectangle(frame, (px + 2, bar_py), (px + 2 + filled_w, bar_py + 5),
-                          bar_col, cv2.FILLED)
+            cv2.rectangle(frame, (px + 2, bar_py),
+                          (px + 2 + filled_w, bar_py + 5), bar_col, cv2.FILLED)
 
     # ── KEY HINTS ─────────────────────────────────────────
-    hint_y = h - 10
     cv2.putText(frame, "S = save now   |   Q = cancel",
-                (w // 2 - 130, hint_y),
+                (w // 2 - 130, h - 8),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.44, (90, 90, 90), 1)
 
 
@@ -527,6 +773,11 @@ def register_live():
 
     zone_buckets = [[] for _ in CAPTURE_ZONES]
 
+    # FIX 6 — Per-zone cooldown: track the last time a sample was
+    # accepted for each zone. Samples taken less than ZONE_SAMPLE_DELAY
+    # seconds apart are skipped, forcing diversity within each zone.
+    zone_last_sample_time = [0.0] * len(CAPTURE_ZONES)
+
     with mp_face_mesh.FaceMesh(
             max_num_faces=1,
             min_detection_confidence=0.7,
@@ -543,21 +794,23 @@ def register_live():
 
             zone_counts      = [len(b) for b in zone_buckets]
             current_zone_idx = None
+            live_yaw         = None
+            live_pitch       = None
 
-            # Find the first incomplete zone to prompt next
+            # First incomplete zone = the one we prompt for next
             next_zone_idx = next(
                 (i for i, c in enumerate(zone_counts) if c < SAMPLES_PER_ZONE),
                 None
             )
 
             if results.multi_face_landmarks:
-                lms        = results.multi_face_landmarks[0].landmark
-                profile    = extract_profile(lms, w, h)
-                yaw, pitch = get_face_angles(lms, w, h)
-                zone_idx   = classify_zone(yaw, pitch)
+                lms             = results.multi_face_landmarks[0].landmark
+                profile         = extract_profile(lms, w, h)
+                live_yaw, live_pitch = get_face_angles(lms, w, h)
+                zone_idx        = classify_zone(live_yaw, live_pitch)
 
                 if profile:
-                    # Draw subtle green mesh
+                    # Draw subtle green face mesh
                     for lm in lms:
                         cv2.circle(frame,
                                    (int(lm.x * w), int(lm.y * h)),
@@ -565,10 +818,18 @@ def register_live():
 
                     if zone_idx is not None:
                         current_zone_idx = zone_idx
-                        if zone_counts[zone_idx] < SAMPLES_PER_ZONE:
-                            zone_buckets[zone_idx].append(profile)
+                        now_t = time.time()
 
-            draw_registration_hud(frame, name, zone_buckets, current_zone_idx, next_zone_idx)
+                        # Accept sample only if this zone needs more AND
+                        # enough time has passed since the last sample here
+                        if (zone_counts[zone_idx] < SAMPLES_PER_ZONE and
+                                now_t - zone_last_sample_time[zone_idx] >= ZONE_SAMPLE_DELAY):
+                            zone_buckets[zone_idx].append(profile)
+                            zone_last_sample_time[zone_idx] = now_t
+
+            draw_registration_hud(frame, name, zone_buckets,
+                                  current_zone_idx, next_zone_idx,
+                                  live_yaw, live_pitch)
 
             cv2.imshow("Face Registration", frame)
 
@@ -601,12 +862,24 @@ def register_live():
         print("❌ No samples collected.")
         return
 
+    # Global profile (median across all angles) — used as fallback
     avg_profile, std_profile = build_robust_profile(all_profiles)
+
+    # Per-zone profiles — used for angle-aware matching (Fix #2)
+    zone_profiles = {}
+    for i, bucket in enumerate(zone_buckets):
+        if len(bucket) == 0:
+            continue
+        zone_label = CAPTURE_ZONES[i][0]
+        zp, zstd   = build_robust_profile(bucket)
+        zone_profiles[zone_label] = {"profile": zp, "std": zstd,
+                                     "samples": len(bucket)}
 
     data[name] = {
         "name"          : name,
-        "profile"       : avg_profile,
+        "profile"       : avg_profile,        # global fallback
         "std"           : std_profile,
+        "zone_profiles" : zone_profiles,       # per-angle profiles
         "total_samples" : len(all_profiles),
         "zones_captured": {CAPTURE_ZONES[i][0]: len(zone_buckets[i])
                            for i in range(len(CAPTURE_ZONES))},
@@ -712,6 +985,9 @@ def mark_attendance():
                         if not live_profile:
                             continue
 
+                        # Get live angle for angle-aware matching (Fix #2)
+                        live_yaw, live_pitch = get_face_angles(lms, w, h)
+
                         xs = [int(lm.x*w) for lm in lms]
                         ys = [int(lm.y*h) for lm in lms]
                         x1 = max(0, min(xs)-10)
@@ -719,41 +995,48 @@ def mark_attendance():
                         y1 = max(0, min(ys)-10)
                         y2 = min(h, max(ys)+10)
 
-                        # Match against all profiles
                         best_name  = None
                         best_score = 0
+                        best_diff  = 999.0   # track closest miss too
 
-                        for name, person in data.items():
+                        for pname, person in data.items():
                             score, is_match = compare_profiles(
-                                person["profile"],
+                                person,
                                 live_profile,
-                                person.get("std")
+                                live_yaw,
+                                live_pitch
                             )
                             if is_match and score > best_score:
                                 best_score = score
-                                best_name  = name
+                                best_name  = pname
+                            # Track closest non-match for soft vote
+                            if score > (100 - best_diff * 100):
+                                best_diff = (100 - score) / 100
 
                         if best_name:
                             seen_this_frame.add(best_name)
 
-                            # Rolling vote buffer
                             if best_name not in vote_buffer:
                                 vote_buffer[best_name] = deque(maxlen=VOTE_WINDOW)
                             vote_buffer[best_name].append(True)
+
+                            # Also feed False into other person's buffers
+                            # so they can't accumulate stale votes
+                            for other in list(vote_buffer.keys()):
+                                if other != best_name:
+                                    vote_buffer[other].append(False)
 
                             vote_ok = (
                                 len(vote_buffer[best_name]) >= VOTE_WINDOW and
                                 sum(vote_buffer[best_name]) >= VOTE_REQUIRE
                             )
 
-                            # Confirmation timer — only starts when vote is stable
                             if vote_ok:
                                 if best_name not in confirm_start:
                                     confirm_start[best_name] = time.time()
                                 elapsed  = time.time() - confirm_start[best_name]
                                 progress = min(elapsed / CONFIRM_SECONDS, 1.0)
                             else:
-                                # Reset timer if vote drops
                                 confirm_start.pop(best_name, None)
                                 elapsed  = 0
                                 progress = 0
@@ -761,69 +1044,90 @@ def mark_attendance():
                             already_confirmed = best_name in confirmed_set
 
                             if already_confirmed:
-                                color = (0, 200, 0)
-                                label = f"{best_name} ✓ ({best_score}%)"
+                                color    = (0, 200, 0)
+                                label    = f"{best_name} ✓ ({best_score:.0f}%)"
                                 progress = 1.0
                             elif vote_ok and elapsed >= CONFIRM_SECONDS:
-                                # ── CONFIRMED ────────────────────────────────
                                 confirmed_set.add(best_name)
                                 marked_today.add(best_name)
                                 elapsed_str = f"{elapsed:.1f}"
                                 append_attendance_row(
                                     ATTENDANCE_FILE, sheet_name,
-                                    best_name, "PRESENT", f"{best_score}%", elapsed_str
+                                    best_name, "PRESENT", f"{best_score:.0f}%", elapsed_str
                                 )
                                 print(f"✅ {best_name} — PRESENT at "
                                       f"{now.strftime('%H:%M:%S')} "
-                                      f"({best_score}%) after {elapsed_str}s")
+                                      f"({best_score:.0f}%) after {elapsed_str}s")
                                 color    = (0, 200, 0)
-                                label    = f"{best_name} ✓ ({best_score}%)"
+                                label    = f"{best_name} ✓ ({best_score:.0f}%)"
                                 progress = 1.0
                             elif vote_ok:
-                                # Timing — show progress bar filling up
                                 color = (0, 200, 180)
-                                label = f"{best_name} ({best_score}%) — hold..."
+                                label = f"{best_name} ({best_score:.0f}%) — hold..."
                             else:
-                                # Vote not stable yet
                                 color = (0, 160, 100)
-                                label = f"{best_name}? ({best_score}%)"
+                                label = f"{best_name}? ({best_score:.0f}%)"
 
                         else:
-                            # Unknown face
-                            color    = (0, 0, 220)
+                            # ── No hard match this frame ──────────────────
+                            # DON'T immediately show UNKNOWN.
+                            # Check if any person has a strong partial vote
+                            # buffer from recent frames — if so, keep showing
+                            # them as a soft candidate rather than flipping to
+                            # UNKNOWN for one bad frame.
+                            soft_name  = None
+                            soft_votes = 0
+                            for pname, buf in vote_buffer.items():
+                                v = sum(buf)
+                                if v > soft_votes and v >= VOTE_REQUIRE - 2:
+                                    soft_votes = v
+                                    soft_name  = pname
+
+                            if soft_name and soft_name not in confirmed_set:
+                                # Still recognising — just a weak frame
+                                color    = (0, 140, 80)
+                                label    = f"{soft_name}? (weak frame)"
+                                progress = 0
+                                seen_this_frame.add(soft_name)
+                            elif soft_name and soft_name in confirmed_set:
+                                # Already confirmed — keep showing green
+                                color    = (0, 200, 0)
+                                label    = f"{soft_name} ✓"
+                                progress = 1.0
+                                seen_this_frame.add(soft_name)
+                            else:
+                                # Genuinely unknown — apply cooldown
+                                color    = (0, 0, 200)
+                                label    = "UNKNOWN"
+                                loc_key  = f"{x1//30}_{y1//30}"
+                                last_log = unknown_last_logged.get(loc_key)
+                                if (last_log is None or
+                                        (now - last_log).seconds > UNKNOWN_COOLDOWN):
+                                    unknown_count += 1
+                                    # Disabled saving UNKNOWN to Excel per user request
+                                    unknown_last_logged[loc_key] = now
+                                    print(f"🚨 Unknown at {now.strftime('%H:%M:%S')}")
                             progress = 0
-
-                            # Reset any partial match state (face left the frame)
-                            for k in list(vote_buffer.keys()):
-                                if k not in seen_this_frame:
-                                    vote_buffer[k].clear()
-                                    confirm_start.pop(k, None)
-
-                            loc_key  = f"{x1//30}_{y1//30}"
-                            last_log = unknown_last_logged.get(loc_key)
-
-                            if (last_log is None or
-                                    (now - last_log).seconds > UNKNOWN_COOLDOWN):
-                                unknown_count += 1
-                                append_attendance_row(
-                                    ATTENDANCE_FILE, sheet_name,
-                                    f"UNKNOWN #{unknown_count}", "UNKNOWN", "N/A"
-                                )
-                                unknown_last_logged[loc_key] = now
-                                print(f"🚨 Unknown at {now.strftime('%H:%M:%S')}")
-
-                            label = "UNKNOWN"
 
                         last_locations.append((x1, y1, x2, y2))
                         last_labels.append(label)
                         last_colors.append(color)
                         last_progresses.append(progress if best_name else 0)
 
-                # Reset vote buffers for faces not seen this frame
+                # Decay vote buffers for faces not seen this frame.
+                # Instead of immediately clearing (which caused UNKNOWN flicker),
+                # inject a False vote — the buffer naturally drains over VOTE_WINDOW
+                # frames if the person truly left. Confirm timer resets only when
+                # the vote count drops below threshold.
                 for name_key in list(vote_buffer.keys()):
                     if name_key not in seen_this_frame:
-                        vote_buffer[name_key].clear()
-                        confirm_start.pop(name_key, None)
+                        vote_buffer[name_key].append(False)
+                        still_ok = (
+                            len(vote_buffer[name_key]) >= VOTE_WINDOW and
+                            sum(vote_buffer[name_key]) >= VOTE_REQUIRE
+                        )
+                        if not still_ok:
+                            confirm_start.pop(name_key, None)
 
             # ── Draw face boxes + confirmation bar ────────
             h, w, _ = frame.shape
@@ -859,21 +1163,32 @@ def mark_attendance():
                         (270,25), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (0,80,255), 2)
             cv2.putText(frame, now.strftime("%H:%M:%S"),
                         (490,25), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (255,255,255), 2)
-            cv2.putText(frame, f"Hold {CONFIRM_SECONDS}s to confirm | Q=Quit | S=Summary",
+            cv2.putText(frame, f"Hold {CONFIRM_SECONDS}s to confirm | Q=Cancel | S=Save & Quit",
                         (10,52), cv2.FONT_HERSHEY_SIMPLEX, 0.42, (120,120,120), 1)
 
             cv2.imshow("Attendance System", frame)
 
             key = cv2.waitKey(1) & 0xFF
             if key == ord('q'):
-                break
+                print("\n❌ Session cancelled. Removing saved data...")
+                try:
+                    wb = load_workbook(ATTENDANCE_FILE)
+                    if sheet_name in wb.sheetnames:
+                        del wb[sheet_name]
+                    if "Summary" in wb.sheetnames:
+                        sw = wb["Summary"]
+                        for row in sw.iter_rows(min_row=4):
+                            if row[0].value == sheet_name:
+                                sw.delete_rows(row[0].row, 1)
+                                break
+                    wb.save(ATTENDANCE_FILE)
+                except Exception:
+                    pass
+                cap.release()
+                cv2.destroyAllWindows()
+                return
             elif key == ord('s'):
-                print("\n" + "="*40)
-                print(f"  Session: {sheet_name}")
-                for name in marked_today:
-                    print(f"  ✅ {name}")
-                print(f"  🚨 Unknowns: {unknown_count}")
-                print("="*40 + "\n")
+                break
 
     cap.release()
     cv2.destroyAllWindows()
