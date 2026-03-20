@@ -1,0 +1,111 @@
+{
+    "Anshika": {
+        "name": "anshika",
+        "profile": {
+            "golden_ratio": 1.1965,
+            "eye_ratio": 0.6903,
+            "inner_eye_ratio": 0.2766,
+            "nose_ratio": 0.4234,
+            "lip_ratio": 0.4269,
+            "jaw_ratio": 0.7864,
+            "brow_ratio": 0.8587,
+            "nose_width_ratio": 0.3391,
+            "fWHR": 1.6716,
+            "symmetry": 97.7907
+        },
+        "total_samples": 40,
+        "registered_on": "2026-03-17 18:06:40"
+    },
+    "Harsh Raj": {
+        "name": "Harsh Raj",
+        "profile": {
+            "golden_ratio": 1.1673,
+            "eye_ratio": 0.6632,
+            "inner_eye_ratio": 0.2622,
+            "nose_ratio": 0.4997,
+            "lip_ratio": 0.3587,
+            "jaw_ratio": 0.8228,
+            "brow_ratio": 0.847,
+            "nose_width_ratio": 0.3117,
+            "fWHR": 1.7138,
+            "symmetry": 93.0005
+        },
+        "total_samples": 40,
+        "registered_on": "2026-03-17 23:27:48"
+    },
+    "AnshikaRaj": {
+        "name": "AnshikaRaj",
+        "profile": {
+            "golden_ratio": 1.2196,
+            "eye_ratio": 0.6552,
+            "inner_eye_ratio": 0.2511,
+            "nose_ratio": 0.4901,
+            "lip_ratio": 0.4219,
+            "jaw_ratio": 0.8276,
+            "brow_ratio": 0.817,
+            "nose_width_ratio": 0.3202,
+            "fWHR": 1.6563,
+            "symmetry": 70.3917
+        },
+        "total_samples": 18,
+        "failed_images": 0,
+        "registered_on": "2026-03-18 15:55:46"
+    },
+    "Himanshu": {
+        "name": "Himanshu",
+        "profile": {
+            "golden_ratio": 1.152,
+            "eye_ratio": 0.6626,
+            "inner_eye_ratio": 0.2592,
+            "nose_ratio": 0.4827,
+            "lip_ratio": 0.3985,
+            "jaw_ratio": 0.8211,
+            "brow_ratio": 0.8223,
+            "nose_width_ratio": 0.3133,
+            "fWHR": 1.7421,
+            "symmetry": 81.6567
+        },
+        "total_samples": 18,
+        "failed_images": 0,
+        "registered_on": "2026-03-18 15:55:47"
+    },
+    "harshhhhhh": {
+        "name": "harshhhhhh",
+        "profile": {
+            "golden_ratio": 1.1875,
+            "eye_ratio": 0.6771,
+            "inner_eye_ratio": 0.2645,
+            "nose_ratio": 0.4918,
+            "lip_ratio": 0.3897,
+            "jaw_ratio": 0.8264,
+            "brow_ratio": 0.8466,
+            "nose_width_ratio": 0.3236,
+            "fWHR": 1.6842,
+            "symmetry": 80.55
+        },
+        "std": {
+            "golden_ratio": 0.0458,
+            "eye_ratio": 0.0122,
+            "inner_eye_ratio": 0.0069,
+            "nose_ratio": 0.0149,
+            "lip_ratio": 0.0234,
+            "jaw_ratio": 0.0088,
+            "brow_ratio": 0.0135,
+            "nose_width_ratio": 0.0117,
+            "fWHR": 0.0671,
+            "symmetry": 9.1903
+        },
+        "total_samples": 15,
+        "zones_captured": {
+            "Front": 0,
+            "Left": 0,
+            "Right": 0,
+            "Up": 5,
+            "Down": 0,
+            "Left+Up": 5,
+            "Right+Up": 5,
+            "Left+Down": 0
+        },
+        "registered_on": "2026-03-19 11:44:52"
+    }
+}
