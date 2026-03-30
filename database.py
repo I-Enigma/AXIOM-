@@ -1,438 +1,453 @@
-import sqlite3
-import os
-from datetime import datetime
+-- ============================================================
+--  AXIOM – Face Recognition Attendance System
+--  MySQL Database Schema
+--  Version: 1.0
+-- ============================================================
 
-DB_PATH = "axiom.db"
+-- Create and use the database
+CREATE DATABASE IF NOT EXISTS axiom_db
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
 
-def get_conn():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row  # lets you access columns by name
-    conn.execute("PRAGMA foreign_keys = ON")
-    return conn
+USE axiom_db;
 
-# ══════════════════════════════════════════
-# CREATE ALL TABLES
-# ══════════════════════════════════════════
-def create_tables():
-    conn = get_conn()
-    cursor = conn.cursor()
+-- ============================================================
+-- TABLE 1: organizations
+-- An organization can be a company, institution, or any group
+-- ============================================================
+CREATE TABLE IF NOT EXISTS organizations (
+  id            INT UNSIGNED      NOT NULL AUTO_INCREMENT,
+  name          VARCHAR(150)      NOT NULL,
+  type          ENUM('institution','company','ngo','other') DEFAULT 'institution',
+  contact_email VARCHAR(150)      DEFAULT NULL,
+  created_at    TIMESTAMP         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at    TIMESTAMP         NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-    # ── TEACHERS ──────────────────────────
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS teachers (
-        id          INTEGER PRIMARY KEY AUTOINCREMENT,
-        teacher_id  TEXT UNIQUE NOT NULL,
-        name        TEXT NOT NULL,
-        password    TEXT NOT NULL,
-        department  TEXT,
-        created_at  TEXT DEFAULT (datetime('now'))
-    )""")
 
-    # ── STUDENTS ──────────────────────────
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS students (
-        id              INTEGER PRIMARY KEY AUTOINCREMENT,
-        student_id      TEXT UNIQUE NOT NULL,
-        name            TEXT NOT NULL,
-        password        TEXT NOT NULL,
-        batch           TEXT,
-        semester        TEXT,
-        department      TEXT,
-        face_registered INTEGER DEFAULT 0,
-        created_at      TEXT DEFAULT (datetime('now'))
-    )""")
+-- ============================================================
+-- TABLE 2: teachers
+-- Teachers / managers who verify students and manage groups
+-- ============================================================
+CREATE TABLE IF NOT EXISTS teachers (
+  id                INT UNSIGNED      NOT NULL AUTO_INCREMENT,
+  org_id            INT UNSIGNED      DEFAULT NULL,
+  full_name         VARCHAR(100)      NOT NULL,
+  email             VARCHAR(150)      NOT NULL UNIQUE,
+  password_hash     VARCHAR(255)      NOT NULL,          -- bcrypt hash
+  phone             VARCHAR(20)       DEFAULT NULL,
+  assigned_dept     VARCHAR(100)      DEFAULT NULL,      -- department/field they manage
+  assigned_group    CHAR(5)           DEFAULT NULL,      -- group/section (A, B, C…)
+  is_active         TINYINT(1)        NOT NULL DEFAULT 1,
+  last_login        TIMESTAMP         DEFAULT NULL,
+  created_at        TIMESTAMP         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at        TIMESTAMP         NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  CONSTRAINT fk_teacher_org FOREIGN KEY (org_id)
+    REFERENCES organizations(id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-    # ── FACE PROFILES ─────────────────────
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS face_profiles (
-        id               INTEGER PRIMARY KEY AUTOINCREMENT,
-        student_id       TEXT UNIQUE NOT NULL,
-        golden_ratio     REAL,
-        eye_ratio        REAL,
-        inner_eye_ratio  REAL,
-        nose_ratio       REAL,
-        lip_ratio        REAL,
-        jaw_ratio        REAL,
-        brow_ratio       REAL,
-        nose_width_ratio REAL,
-        fwhr             REAL,
-        symmetry         REAL,
-        total_samples    INTEGER DEFAULT 40,
-        registered_on    TEXT DEFAULT (datetime('now')),
-        FOREIGN KEY (student_id) REFERENCES students(student_id)
-    )""")
 
-    # ── BATCHES ───────────────────────────
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS batches (
-        id         INTEGER PRIMARY KEY AUTOINCREMENT,
-        batch_id   TEXT UNIQUE NOT NULL,
-        name       TEXT NOT NULL,
-        year       TEXT,
-        semester   TEXT,
-        strength   INTEGER DEFAULT 0,
-        created_at TEXT DEFAULT (datetime('now'))
-    )""")
+-- ============================================================
+-- TABLE 3: students
+-- Core user table – everyone who registers via the AXIOM portal
+-- ============================================================
+CREATE TABLE IF NOT EXISTS students (
+  id              INT UNSIGNED      NOT NULL AUTO_INCREMENT,
+  org_id          INT UNSIGNED      DEFAULT NULL,
+  mentor_id       INT UNSIGNED      DEFAULT NULL,        -- assigned teacher/manager
 
-    # ── SUBJECTS ──────────────────────────
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS subjects (
-        id         INTEGER PRIMARY KEY AUTOINCREMENT,
-        subject_id TEXT UNIQUE NOT NULL,
-        name       TEXT NOT NULL,
-        code       TEXT,
-        color      TEXT DEFAULT '#00ff88',
-        created_at TEXT DEFAULT (datetime('now'))
-    )""")
+  -- Personal info
+  first_name      VARCHAR(60)       NOT NULL,
+  last_name       VARCHAR(60)       NOT NULL,
+  email           VARCHAR(150)      NOT NULL UNIQUE,
+  phone           VARCHAR(20)       DEFAULT NULL,
+  date_of_birth   DATE              DEFAULT NULL,
 
-    # ── STUDENT-BATCH MAPPING ─────────────
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS student_batch (
-        id         INTEGER PRIMARY KEY AUTOINCREMENT,
-        student_id TEXT NOT NULL,
-        batch_id   TEXT NOT NULL,
-        FOREIGN KEY (student_id) REFERENCES students(student_id),
-        FOREIGN KEY (batch_id)   REFERENCES batches(batch_id)
-    )""")
+  -- Academic / professional info
+  roll_no         VARCHAR(30)       NOT NULL UNIQUE,     -- employee/roll/ID number
+  department      VARCHAR(100)      DEFAULT NULL,
+  year_level      VARCHAR(30)       DEFAULT NULL,        -- "2nd Year", "Senior", "Staff"
+  group_section   CHAR(5)           DEFAULT NULL,        -- A / B / C / D
 
-    # ── LECTURES ──────────────────────────
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS lectures (
-        id            INTEGER PRIMARY KEY AUTOINCREMENT,
-        lecture_id    TEXT UNIQUE NOT NULL,
-        subject_id    TEXT NOT NULL,
-        batch_id      TEXT NOT NULL,
-        teacher_id    TEXT NOT NULL,
-        day           TEXT NOT NULL,
-        start_time    TEXT NOT NULL,
-        end_time      TEXT NOT NULL,
-        late_after    TEXT,
-        room          TEXT,
-        status        TEXT DEFAULT 'upcoming',
-        cancel_reason TEXT,
-        lecture_date  TEXT,
-        created_at    TEXT DEFAULT (datetime('now')),
-        FOREIGN KEY (subject_id) REFERENCES subjects(subject_id),
-        FOREIGN KEY (batch_id)   REFERENCES batches(batch_id),
-        FOREIGN KEY (teacher_id) REFERENCES teachers(teacher_id)
-    )""")
+  -- Credentials
+  username        VARCHAR(60)       NOT NULL UNIQUE,
+  password_hash   VARCHAR(255)      NOT NULL,            -- bcrypt hash
 
-    # ── ATTENDANCE SESSIONS ───────────────
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS attendance_sessions (
-        id         INTEGER PRIMARY KEY AUTOINCREMENT,
-        session_id TEXT UNIQUE NOT NULL,
-        lecture_id TEXT NOT NULL,
-        teacher_id TEXT NOT NULL,
-        opened_at  TEXT,
-        closed_at  TEXT,
-        status     TEXT DEFAULT 'open',
-        FOREIGN KEY (lecture_id) REFERENCES lectures(lecture_id),
-        FOREIGN KEY (teacher_id) REFERENCES teachers(teacher_id)
-    )""")
+  -- Face recognition
+  face_encoding   LONGTEXT          DEFAULT NULL,        -- JSON array of 128-d face vector
+  face_registered TINYINT(1)        NOT NULL DEFAULT 0,
 
-    # ── ATTENDANCE ────────────────────────
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS attendance (
-        id           INTEGER PRIMARY KEY AUTOINCREMENT,
-        student_id   TEXT NOT NULL,
-        lecture_id   TEXT NOT NULL,
-        subject_id   TEXT NOT NULL,
-        batch_id     TEXT NOT NULL,
-        lecture_date TEXT NOT NULL,
-        lecture_time TEXT,
-        marked_at    TEXT,
-        late_by_mins INTEGER DEFAULT 0,
-        status       TEXT DEFAULT 'ABSENT',
-        match_score  REAL,
-        marked_by    TEXT DEFAULT 'student',
-        created_at   TEXT DEFAULT (datetime('now')),
-        FOREIGN KEY (student_id) REFERENCES students(student_id),
-        FOREIGN KEY (lecture_id) REFERENCES lectures(lecture_id)
-    )""")
+  -- Account status
+  status          ENUM('pending','verified','rejected','suspended')
+                                    NOT NULL DEFAULT 'pending',
+  verified_at     TIMESTAMP         DEFAULT NULL,
+  verified_by     INT UNSIGNED      DEFAULT NULL,        -- teacher id who approved
 
-    # ── UNKNOWN PERSONS ───────────────────
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS unknown_persons (
-        id          INTEGER PRIMARY KEY AUTOINCREMENT,
-        detected_at TEXT DEFAULT (datetime('now')),
-        lecture_id  TEXT,
-        session_id  TEXT,
-        note        TEXT
-    )""")
+  -- Meta
+  last_login      TIMESTAMP         DEFAULT NULL,
+  created_at      TIMESTAMP         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at      TIMESTAMP         NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
-    conn.commit()
-    conn.close()
-    print("✅ All tables created successfully!")
+  PRIMARY KEY (id),
+  CONSTRAINT fk_student_org     FOREIGN KEY (org_id)
+    REFERENCES organizations(id) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT fk_student_mentor  FOREIGN KEY (mentor_id)
+    REFERENCES teachers(id)      ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT fk_student_verified_by FOREIGN KEY (verified_by)
+    REFERENCES teachers(id)      ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-# ══════════════════════════════════════════
-# INSERT DEMO DATA
-# ══════════════════════════════════════════
-def insert_demo_data():
-    conn = get_conn()
-    cursor = conn.cursor()
 
-    # Teachers
-    cursor.execute("""
-        INSERT OR IGNORE INTO teachers
-        (teacher_id, name, password, department)
-        VALUES (?,?,?,?)
-    """, ('TCH001','Prof. Sharma','sharma123','Computer Science'))
+-- ============================================================
+-- TABLE 4: verification_requests
+-- Every time a student registers, a row is created here.
+-- The teacher acts on this row to approve / reject.
+-- ============================================================
+CREATE TABLE IF NOT EXISTS verification_requests (
+  id              INT UNSIGNED      NOT NULL AUTO_INCREMENT,
+  student_id      INT UNSIGNED      NOT NULL,
+  teacher_id      INT UNSIGNED      NOT NULL,            -- teacher to be notified
+  status          ENUM('pending','approved','rejected')
+                                    NOT NULL DEFAULT 'pending',
+  teacher_note    TEXT              DEFAULT NULL,        -- optional rejection reason
+  notified_at     TIMESTAMP         DEFAULT NULL,        -- when email was sent
+  acted_at        TIMESTAMP         DEFAULT NULL,        -- when teacher approved/rejected
+  created_at      TIMESTAMP         NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    # Students
-    students = [
-        ('CS2024101','Rahul Sharma', 'axiom123','CS-2024-A','Sem 5','Computer Science'),
-        ('CS2024102','Priya Patel',  'axiom123','CS-2024-A','Sem 5','Computer Science'),
-        ('CS2024103','Amit Kumar',   'axiom123','CS-2024-B','Sem 5','Computer Science'),
-        ('CS2024104','Sneha Joshi',  'axiom123','CS-2024-B','Sem 5','Computer Science'),
-    ]
-    cursor.executemany("""
-        INSERT OR IGNORE INTO students
-        (student_id, name, password, batch, semester, department)
-        VALUES (?,?,?,?,?,?)
-    """, students)
+  PRIMARY KEY (id),
+  CONSTRAINT fk_vreq_student  FOREIGN KEY (student_id)
+    REFERENCES students(id)  ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT fk_vreq_teacher  FOREIGN KEY (teacher_id)
+    REFERENCES teachers(id)  ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-    # Batches
-    batches = [
-        ('B001','CS-2024-A','3rd Year','Sem 5',60),
-        ('B002','CS-2024-B','3rd Year','Sem 5',58),
-        ('B003','IT-2024-A','2nd Year','Sem 3',55),
-    ]
-    cursor.executemany("""
-        INSERT OR IGNORE INTO batches
-        (batch_id, name, year, semester, strength)
-        VALUES (?,?,?,?,?)
-    """, batches)
 
-    # Subjects
-    subjects = [
-        ('S001','Data Structures',   'CS301','#a29bfe'),
-        ('S002','Computer Networks', 'CS401','#74b9ff'),
-        ('S003','Operating Systems', 'CS302','#fd79a8'),
-        ('S004','Python Programming','IT201','#00b894'),
-    ]
-    cursor.executemany("""
-        INSERT OR IGNORE INTO subjects
-        (subject_id, name, code, color)
-        VALUES (?,?,?,?)
-    """, subjects)
+-- ============================================================
+-- TABLE 5: notifications
+-- In-app notifications shown on the teacher dashboard
+-- ============================================================
+CREATE TABLE IF NOT EXISTS notifications (
+  id              INT UNSIGNED      NOT NULL AUTO_INCREMENT,
+  recipient_id    INT UNSIGNED      NOT NULL,            -- teacher id
+  type            ENUM('new_registration','system','info')
+                                    NOT NULL DEFAULT 'new_registration',
+  title           VARCHAR(150)      NOT NULL,
+  message         TEXT              NOT NULL,
+  is_read         TINYINT(1)        NOT NULL DEFAULT 0,
+  reference_id    INT UNSIGNED      DEFAULT NULL,        -- e.g. verification_request id
+  created_at      TIMESTAMP         NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    # Student-Batch mapping
-    mappings = [
-        ('CS2024101','B001'),
-        ('CS2024102','B001'),
-        ('CS2024103','B002'),
-        ('CS2024104','B002'),
-    ]
-    cursor.executemany("""
-        INSERT OR IGNORE INTO student_batch
-        (student_id, batch_id) VALUES (?,?)
-    """, mappings)
+  PRIMARY KEY (id),
+  CONSTRAINT fk_notif_teacher FOREIGN KEY (recipient_id)
+    REFERENCES teachers(id) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-    # Lectures
-    from datetime import date
-    today = date.today().strftime('%Y-%m-%d')
-    lectures = [
-        ('LEC001','S001','B001','TCH001','Monday','09:00','10:00','09:10','Room 301','upcoming',today),
-        ('LEC002','S002','B001','TCH001','Monday','10:00','11:00','10:10','Lab 2',   'upcoming',today),
-        ('LEC003','S003','B001','TCH001','Monday','11:00','12:00','11:10','Room 201','upcoming',today),
-        ('LEC004','S004','B002','TCH001','Tuesday','13:00','14:00','13:10','Lab 1',  'upcoming',today),
-    ]
-    cursor.executemany("""
-        INSERT OR IGNORE INTO lectures
-        (lecture_id, subject_id, batch_id, teacher_id,
-         day, start_time, end_time, late_after,
-         room, status, lecture_date)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?)
-    """, lectures)
 
-    conn.commit()
-    conn.close()
-    print("✅ Demo data inserted!")
+-- ============================================================
+-- TABLE 6: attendance_sessions
+-- A teacher creates a session (e.g. "Morning Lecture – 9 AM")
+-- ============================================================
+CREATE TABLE IF NOT EXISTS attendance_sessions (
+  id              INT UNSIGNED      NOT NULL AUTO_INCREMENT,
+  teacher_id      INT UNSIGNED      NOT NULL,
+  org_id          INT UNSIGNED      DEFAULT NULL,
+  session_name    VARCHAR(150)      NOT NULL,
+  department      VARCHAR(100)      DEFAULT NULL,
+  group_section   CHAR(5)           DEFAULT NULL,
+  started_at      TIMESTAMP         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  ended_at        TIMESTAMP         DEFAULT NULL,
+  is_active       TINYINT(1)        NOT NULL DEFAULT 1,
 
-# ══════════════════════════════════════════
-# USEFUL FUNCTIONS
-# ══════════════════════════════════════════
+  PRIMARY KEY (id),
+  CONSTRAINT fk_session_teacher FOREIGN KEY (teacher_id)
+    REFERENCES teachers(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT fk_session_org     FOREIGN KEY (org_id)
+    REFERENCES organizations(id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-# ── Save face profile ──────────────────
-def save_face_profile(student_id, profile):
-    conn = get_conn()
-    cursor = conn.cursor()
-    cursor.execute("""
-        INSERT OR REPLACE INTO face_profiles
-        (student_id, golden_ratio, eye_ratio, inner_eye_ratio,
-         nose_ratio, lip_ratio, jaw_ratio, brow_ratio,
-         nose_width_ratio, fwhr, symmetry, total_samples)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
-    """, (
-        student_id,
-        profile['golden_ratio'],
-        profile['eye_ratio'],
-        profile['inner_eye_ratio'],
-        profile['nose_ratio'],
-        profile['lip_ratio'],
-        profile['jaw_ratio'],
-        profile['brow_ratio'],
-        profile['nose_width_ratio'],
-        profile['fWHR'],
-        profile['symmetry'],
-        profile.get('total_samples', 40)
-    ))
-    # Mark student as face registered
-    cursor.execute("""
-        UPDATE students SET face_registered=1
-        WHERE student_id=?
-    """, (student_id,))
-    conn.commit()
-    conn.close()
-    print(f"✅ Face profile saved for {student_id}")
 
-# ── Load all face profiles ─────────────
-def load_all_profiles():
-    conn = get_conn()
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT fp.*, s.name
-        FROM face_profiles fp
-        JOIN students s ON fp.student_id = s.student_id
-    """)
-    rows = cursor.fetchall()
-    conn.close()
-    profiles = {}
-    for row in rows:
-        profiles[row['student_id']] = {
-            'name'            : row['name'],
-            'profile'         : {
-                'golden_ratio'    : row['golden_ratio'],
-                'eye_ratio'       : row['eye_ratio'],
-                'inner_eye_ratio' : row['inner_eye_ratio'],
-                'nose_ratio'      : row['nose_ratio'],
-                'lip_ratio'       : row['lip_ratio'],
-                'jaw_ratio'       : row['jaw_ratio'],
-                'brow_ratio'      : row['brow_ratio'],
-                'nose_width_ratio': row['nose_width_ratio'],
-                'fWHR'            : row['fwhr'],
-                'symmetry'        : row['symmetry'],
-            }
-        }
-    return profiles
+-- ============================================================
+-- TABLE 7: attendance_records
+-- Each row = one student marked present in a session
+-- ============================================================
+CREATE TABLE IF NOT EXISTS attendance_records (
+  id              INT UNSIGNED      NOT NULL AUTO_INCREMENT,
+  session_id      INT UNSIGNED      NOT NULL,
+  student_id      INT UNSIGNED      NOT NULL,
+  marked_at       TIMESTAMP         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  method          ENUM('face','manual','qr') NOT NULL DEFAULT 'face',
+  confidence      DECIMAL(5,2)      DEFAULT NULL,        -- face match confidence %
+  is_present      TINYINT(1)        NOT NULL DEFAULT 1,
 
-# ── Mark attendance ────────────────────
-def mark_attendance(student_id, lecture_id, subject_id,
-                    batch_id, status, match_score, late_mins=0):
-    conn = get_conn()
-    cursor = conn.cursor()
-    from datetime import date, datetime
-    cursor.execute("""
-        INSERT OR REPLACE INTO attendance
-        (student_id, lecture_id, subject_id, batch_id,
-         lecture_date, marked_at, late_by_mins,
-         status, match_score, marked_by)
-        VALUES (?,?,?,?,?,?,?,?,?,'student')
-    """, (
-        student_id, lecture_id, subject_id, batch_id,
-        date.today().strftime('%Y-%m-%d'),
-        datetime.now().strftime('%H:%M:%S'),
-        late_mins, status, match_score
-    ))
-    conn.commit()
-    conn.close()
-    print(f"✅ {student_id} marked {status}")
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_session_student (session_id, student_id),
+  CONSTRAINT fk_att_session  FOREIGN KEY (session_id)
+    REFERENCES attendance_sessions(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT fk_att_student  FOREIGN KEY (student_id)
+    REFERENCES students(id)           ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-# ── Open session (teacher) ─────────────
-def open_session(lecture_id, teacher_id):
-    conn = get_conn()
-    cursor = conn.cursor()
-    import uuid
-    session_id = 'SESS_' + str(uuid.uuid4())[:8].upper()
-    cursor.execute("""
-        INSERT INTO attendance_sessions
-        (session_id, lecture_id, teacher_id, opened_at, status)
-        VALUES (?,?,?,datetime('now'),'open')
-    """, (session_id, lecture_id, teacher_id))
-    cursor.execute("""
-        UPDATE lectures SET status='open'
-        WHERE lecture_id=?
-    """, (lecture_id,))
-    conn.commit()
-    conn.close()
-    print(f"✅ Session opened: {session_id}")
-    return session_id
 
-# ── Close session (teacher) ────────────
-def close_session(session_id, lecture_id):
-    conn = get_conn()
-    cursor = conn.cursor()
-    cursor.execute("""
-        UPDATE attendance_sessions
-        SET status='closed', closed_at=datetime('now')
-        WHERE session_id=?
-    """, (session_id,))
-    cursor.execute("""
-        UPDATE lectures SET status='closed'
-        WHERE lecture_id=?
-    """, (lecture_id,))
-    conn.commit()
-    conn.close()
-    print(f"✅ Session closed: {session_id}")
+-- ============================================================
+-- TABLE 8: password_reset_tokens
+-- Temporary tokens for "Forgot Password" flow
+-- ============================================================
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+  id              INT UNSIGNED      NOT NULL AUTO_INCREMENT,
+  user_type       ENUM('student','teacher') NOT NULL,
+  user_id         INT UNSIGNED      NOT NULL,
+  token           VARCHAR(255)      NOT NULL UNIQUE,     -- hashed random token
+  expires_at      TIMESTAMP         NOT NULL,
+  used            TINYINT(1)        NOT NULL DEFAULT 0,
+  created_at      TIMESTAMP         NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-# ── Get student report ─────────────────
-def get_student_report(student_id):
-    conn = get_conn()
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT
-            s.name        AS subject,
-            s.code,
-            COUNT(a.id)   AS total,
-            SUM(CASE WHEN a.status IN ('PRESENT','LATE') THEN 1 ELSE 0 END) AS present,
-            SUM(CASE WHEN a.status = 'LATE' THEN 1 ELSE 0 END) AS late_count,
-            ROUND(
-                SUM(CASE WHEN a.status IN ('PRESENT','LATE') THEN 1.0 ELSE 0 END)
-                / COUNT(a.id) * 100, 1
-            ) AS percentage
-        FROM attendance a
-        JOIN subjects s ON a.subject_id = s.subject_id
-        WHERE a.student_id = ?
-        GROUP BY a.subject_id
-    """, (student_id,))
-    report = cursor.fetchall()
-    conn.close()
-    return [dict(row) for row in report]
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-# ── Log unknown person ─────────────────
-def log_unknown(lecture_id=None, session_id=None, note=''):
-    conn = get_conn()
-    cursor = conn.cursor()
-    cursor.execute("""
-        INSERT INTO unknown_persons
-        (lecture_id, session_id, note)
-        VALUES (?,?,?)
-    """, (lecture_id, session_id, note))
-    conn.commit()
-    conn.close()
 
-# ── Delete everything ──────────────────
-def reset_database():
-    conn.close() if 'conn' in dir() else None
-    if os.path.exists(DB_PATH):
-        os.remove(DB_PATH)
-        print("🗑️  Database deleted!")
-    create_tables()
-    print("✅ Fresh database created!")
+-- ============================================================
+-- TABLE 9: audit_log
+-- Track important actions (verifications, logins, changes)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS audit_log (
+  id              BIGINT UNSIGNED   NOT NULL AUTO_INCREMENT,
+  actor_type      ENUM('student','teacher','system') NOT NULL,
+  actor_id        INT UNSIGNED      DEFAULT NULL,
+  action          VARCHAR(80)       NOT NULL,            -- e.g. 'student.verified'
+  target_table    VARCHAR(60)       DEFAULT NULL,
+  target_id       INT UNSIGNED      DEFAULT NULL,
+  details         JSON              DEFAULT NULL,        -- extra context
+  ip_address      VARCHAR(45)       DEFAULT NULL,
+  created_at      TIMESTAMP         NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-# ══════════════════════════════════════════
-# RUN
-# ══════════════════════════════════════════
-if __name__ == "__main__":
-    print("Setting up AXIOM database...")
-    create_tables()
-    insert_demo_data()
-    print("\n✅ AXIOM database ready!")
-    print(f"📁 File: {os.path.abspath(DB_PATH)}")
+  PRIMARY KEY (id),
+  INDEX idx_audit_actor  (actor_type, actor_id),
+  INDEX idx_audit_action (action),
+  INDEX idx_audit_date   (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-    # Test report
-    print("\n📊 Student Report:")
-    report = get_student_report('CS2024101')
-    for row in report:
-        print(f"  {row['subject']} — {row['percentage']}%")
+
+-- ============================================================
+-- INDEXES for performance
+-- ============================================================
+CREATE INDEX idx_student_status     ON students(status);
+CREATE INDEX idx_student_mentor     ON students(mentor_id);
+CREATE INDEX idx_student_dept       ON students(department);
+CREATE INDEX idx_vreq_teacher_status ON verification_requests(teacher_id, status);
+CREATE INDEX idx_notif_recipient    ON notifications(recipient_id, is_read);
+CREATE INDEX idx_att_session        ON attendance_records(session_id);
+CREATE INDEX idx_att_student        ON attendance_records(student_id);
+
+
+-- ============================================================
+-- SAMPLE SEED DATA (optional – remove in production)
+-- ============================================================
+
+-- Default organization
+INSERT INTO organizations (name, type, contact_email)
+VALUES ('AXIOM Demo Organization', 'institution', 'admin@axiom.app');
+
+-- Default teacher (password: Teacher@123 — bcrypt hashed below)
+INSERT INTO teachers (org_id, full_name, email, password_hash, assigned_dept, assigned_group)
+VALUES (
+  1,
+  'Prof. Rajesh Kumar',
+  'rajesh@axiom.app',
+  '$2b$12$Gv8XNx4Mj3qP5zDHfC2mKuRt7lYsOeWnBpA0cI1dE6hM9Tj3vFXya',
+  'Computer Science',
+  'A'
+);
+
+-- Demo student (password: Student@123 — bcrypt hashed below, status = verified)
+INSERT INTO students (
+  org_id, mentor_id, first_name, last_name, email, phone,
+  roll_no, department, year_level, group_section,
+  username, password_hash, status, verified_at, verified_by
+) VALUES (
+  1, 1, 'Arjun', 'Sharma', 'arjun@axiom.app', '+91-9876543210',
+  'CS2024001', 'Computer Science', '2nd Year', 'A',
+  'arjun_sh_0012024',
+  '$2b$12$Kv9YNx5Lj4rQ6aDIfD3nLvSu8mZtPfXoBqB1dJ2eF7iN0Uk4wGYzb',
+  'verified', NOW(), 1
+);
+
+-- ============================================================
+-- VIEWS
+-- ============================================================
+
+-- View: pending students with their assigned teacher info
+CREATE OR REPLACE VIEW v_pending_students AS
+SELECT
+  s.id                            AS student_id,
+  CONCAT(s.first_name,' ',s.last_name) AS full_name,
+  s.email,
+  s.roll_no,
+  s.department,
+  s.year_level,
+  s.group_section,
+  s.username,
+  s.created_at                    AS registered_at,
+  t.id                            AS teacher_id,
+  t.full_name                     AS teacher_name,
+  t.email                         AS teacher_email,
+  vr.id                           AS verification_request_id,
+  vr.status                       AS verification_status
+FROM students s
+LEFT JOIN teachers t              ON t.id = s.mentor_id
+LEFT JOIN verification_requests vr ON vr.student_id = s.id
+WHERE s.status = 'pending';
+
+
+-- View: attendance summary per student per session
+CREATE OR REPLACE VIEW v_attendance_summary AS
+SELECT
+  sess.id                          AS session_id,
+  sess.session_name,
+  sess.started_at,
+  s.id                             AS student_id,
+  CONCAT(s.first_name,' ',s.last_name) AS student_name,
+  s.roll_no,
+  s.department,
+  ar.marked_at,
+  ar.method,
+  ar.confidence,
+  ar.is_present
+FROM attendance_sessions sess
+JOIN attendance_records ar   ON ar.session_id = sess.id
+JOIN students s              ON s.id = ar.student_id;
+
+
+-- ============================================================
+-- STORED PROCEDURE: approve_student
+-- Call: CALL approve_student(student_id, teacher_id);
+-- ============================================================
+DELIMITER $$
+
+CREATE PROCEDURE IF NOT EXISTS approve_student(
+  IN p_student_id  INT UNSIGNED,
+  IN p_teacher_id  INT UNSIGNED
+)
+BEGIN
+  -- Update student status
+  UPDATE students
+  SET
+    status      = 'verified',
+    verified_at = NOW(),
+    verified_by = p_teacher_id
+  WHERE id = p_student_id;
+
+  -- Update verification request
+  UPDATE verification_requests
+  SET
+    status   = 'approved',
+    acted_at = NOW()
+  WHERE student_id = p_student_id
+    AND teacher_id = p_teacher_id
+    AND status     = 'pending';
+
+  -- Log the action
+  INSERT INTO audit_log (actor_type, actor_id, action, target_table, target_id)
+  VALUES ('teacher', p_teacher_id, 'student.verified', 'students', p_student_id);
+
+  -- Mark notification as read
+  UPDATE notifications
+  SET is_read = 1
+  WHERE recipient_id  = p_teacher_id
+    AND reference_id  = (
+      SELECT id FROM verification_requests
+      WHERE student_id = p_student_id LIMIT 1
+    );
+END$$
+
+DELIMITER ;
+
+
+-- ============================================================
+-- STORED PROCEDURE: register_student
+-- Call from your backend after hashing the password
+-- ============================================================
+DELIMITER $$
+
+CREATE PROCEDURE IF NOT EXISTS register_student(
+  IN p_org_id        INT UNSIGNED,
+  IN p_first_name    VARCHAR(60),
+  IN p_last_name     VARCHAR(60),
+  IN p_email         VARCHAR(150),
+  IN p_phone         VARCHAR(20),
+  IN p_dob           DATE,
+  IN p_roll_no       VARCHAR(30),
+  IN p_department    VARCHAR(100),
+  IN p_year_level    VARCHAR(30),
+  IN p_group_section CHAR(5),
+  IN p_username      VARCHAR(60),
+  IN p_password_hash VARCHAR(255)
+)
+BEGIN
+  DECLARE v_student_id  INT UNSIGNED;
+  DECLARE v_teacher_id  INT UNSIGNED;
+  DECLARE v_vreq_id     INT UNSIGNED;
+
+  -- Insert the new student (status defaults to 'pending')
+  INSERT INTO students (
+    org_id, first_name, last_name, email, phone, date_of_birth,
+    roll_no, department, year_level, group_section,
+    username, password_hash
+  ) VALUES (
+    p_org_id, p_first_name, p_last_name, p_email, p_phone, p_dob,
+    p_roll_no, p_department, p_year_level, p_group_section,
+    p_username, p_password_hash
+  );
+
+  SET v_student_id = LAST_INSERT_ID();
+
+  -- Find the right teacher (same dept + group in the org)
+  SELECT id INTO v_teacher_id
+  FROM teachers
+  WHERE org_id          = p_org_id
+    AND assigned_dept   = p_department
+    AND assigned_group  = p_group_section
+  LIMIT 1;
+
+  -- Fallback: any teacher in the org
+  IF v_teacher_id IS NULL THEN
+    SELECT id INTO v_teacher_id
+    FROM teachers WHERE org_id = p_org_id LIMIT 1;
+  END IF;
+
+  -- Assign mentor
+  IF v_teacher_id IS NOT NULL THEN
+    UPDATE students SET mentor_id = v_teacher_id WHERE id = v_student_id;
+
+    -- Create verification request
+    INSERT INTO verification_requests (student_id, teacher_id, notified_at)
+    VALUES (v_student_id, v_teacher_id, NOW());
+
+    SET v_vreq_id = LAST_INSERT_ID();
+
+    -- Create in-app notification for teacher
+    INSERT INTO notifications (recipient_id, type, title, message, reference_id)
+    VALUES (
+      v_teacher_id,
+      'new_registration',
+      CONCAT('New Registration: ', p_first_name, ' ', p_last_name),
+      CONCAT('Student ', p_first_name, ' ', p_last_name,
+             ' (Roll: ', p_roll_no, ') has registered and needs your verification.'),
+      v_vreq_id
+    );
+  END IF;
+
+  -- Audit log
+  INSERT INTO audit_log (actor_type, actor_id, action, target_table, target_id)
+  VALUES ('student', v_student_id, 'student.registered', 'students', v_student_id);
+
+  -- Return the new student's id and assigned teacher
+  SELECT v_student_id AS new_student_id, v_teacher_id AS assigned_teacher_id;
+END$$
+
+DELIMITER ;
+
+-- ============================================================
+-- END OF SCHEMA
+-- ============================================================
