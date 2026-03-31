@@ -175,6 +175,82 @@ def verify_student(student_id):
     return jsonify({"success": True, "status": new_status})
 
 # ────────────────────────────────────────
+# TEACHER LOGIN
+# ────────────────────────────────────────
+@app.route('/api/teacher-login', methods=['POST'])
+def teacher_login():
+    data = request.json
+    db   = get_db()
+    cur  = db.cursor(dictionary=True)
+
+    cur.execute(
+        "SELECT * FROM teachers WHERE email = %s",
+        (data['email'],)
+    )
+    teacher = cur.fetchone()
+    cur.close()
+    db.close()
+
+    if not teacher:
+        return jsonify({
+            "success": False,
+            "message": "Teacher email not found."
+        }), 404
+
+    try:
+        password_match = bcrypt.checkpw(
+            data['password'].encode('utf-8'),
+            teacher['password_hash'].encode('utf-8')
+        )
+    except Exception:
+        password_match = False
+
+    if not password_match:
+        return jsonify({
+            "success": False,
+            "message": "Wrong password."
+        }), 401
+
+    return jsonify({
+        "success": True,
+        "teacher": {
+            "id"         : teacher['id'],
+            "name"       : teacher['name'],
+            "email"      : teacher['email'],
+            "department" : teacher['department']
+        }
+    })
+
+# ────────────────────────────────────────
+# SEED DEFAULT TEACHER (run once)
+# ────────────────────────────────────────
+@app.route('/api/seed-teacher', methods=['POST'])
+def seed_teacher():
+    db  = get_db()
+    cur = db.cursor(dictionary=True)
+    cur.execute("SELECT id FROM teachers LIMIT 1")
+    exists = cur.fetchone()
+
+    if exists:
+        # Update existing teacher password so login works
+        hashed = bcrypt.hashpw(b'teacher123', bcrypt.gensalt()).decode('utf-8')
+        cur.execute("UPDATE teachers SET password_hash = %s WHERE id = %s", (hashed, exists['id']))
+        db.commit()
+        cur.close()
+        db.close()
+        return jsonify({"success": True, "message": "Teacher password reset to 'teacher123'."})
+
+    hashed = bcrypt.hashpw(b'teacher123', bcrypt.gensalt()).decode('utf-8')
+    cur.execute("""
+        INSERT INTO teachers (name, email, department, password_hash)
+        VALUES (%s, %s, %s, %s)
+    """, ('Prof. Rajesh Kumar', 'teacher@college.edu', 'Computer Science', hashed))
+    db.commit()
+    cur.close()
+    db.close()
+    return jsonify({"success": True, "message": "Default teacher created. Email: teacher@college.edu, Password: teacher123"})
+
+# ────────────────────────────────────────
 if __name__ == '__main__':
     print("AXIOM Backend running at http://localhost:5000")
     app.run(debug=True, port=5000)

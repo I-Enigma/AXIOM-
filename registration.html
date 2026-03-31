@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>AXIOM – Face Recognition Attendance</title>
+<title>AXIOM Face Recognition Attendance</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Syne:wght@400;600;800&family=JetBrains+Mono:wght@300;400;600&display=swap" rel="stylesheet"/>
 <style>
   :root {
@@ -1051,7 +1051,7 @@ function checkStrength(pw) {
 }
 
 // ======== REGISTER ========
-function doRegister() {
+async function doRegister() {
   const user = document.getElementById('r-username').value;
   const pass = document.getElementById('r-pass').value;
   const pass2 = document.getElementById('r-pass2').value;
@@ -1059,64 +1059,112 @@ function doRegister() {
   if (!pass || pass.length < 6) { showToast('Password must be at least 6 characters','warn'); return; }
   if (pass !== pass2) { showToast('Passwords do not match','warn'); return; }
 
-  registrationData = {
-    name: document.getElementById('r-first').value + ' ' + document.getElementById('r-last').value,
-    roll: document.getElementById('r-roll').value,
+  const payload = {
+    first_name: document.getElementById('r-first').value,
+    last_name: document.getElementById('r-last').value,
     email: document.getElementById('r-email').value,
+    phone: document.getElementById('r-phone').value || '',
+    dob: document.getElementById('r-dob').value || null,
+    roll_number: document.getElementById('r-roll').value,
     branch: document.getElementById('r-branch').value,
     year: document.getElementById('r-year').value,
     section: document.getElementById('r-section').value,
     username: user,
+    password: pass
   };
 
-  // populate pending screen
-  document.getElementById('pend-name').textContent = registrationData.name;
-  document.getElementById('pend-roll').textContent = registrationData.roll;
-  document.getElementById('pend-user').textContent = registrationData.username;
-
-  showToast('Registration submitted! Teacher notified 🔔','success');
-  setTimeout(() => goTo('pending'), 800);
+  try {
+    showToast('Submitting registration...','success');
+    const res = await fetch('http://localhost:5000/api/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    
+    if (res.ok && data.success) {
+      document.getElementById('pend-name').textContent = payload.first_name + ' ' + payload.last_name;
+      document.getElementById('pend-roll').textContent = payload.roll_number;
+      document.getElementById('pend-user').textContent = payload.username;
+      
+      showToast('Registration submitted! Teacher notified 🔔', 'success');
+      setTimeout(() => goTo('pending'), 800);
+    } else {
+      showToast(data.message || 'Registration failed', 'warn');
+    }
+  } catch (err) {
+    showToast('Cannot connect to server. Is app.py running?', 'warn');
+  }
 }
 
 // ======== STUDENT LOGIN ========
-// Demo: accepts any username "testuser" / password "test1234" as verified
-function doLogin() {
+async function doLogin() {
   const u = document.getElementById('login-user').value;
   const p = document.getElementById('login-pass').value;
   if (!u || !p) { showToast('Enter username and password','warn'); return; }
 
-  // Simulate DB check
   showToast('Authenticating...','success');
-  setTimeout(() => {
-    // Demo credentials
-    if (u === 'arjun_sh_0012024' || u.length > 3) {
-      const demo = {
-        name: 'Arjun Sharma', roll: 'CS2024001',
-        branch:'Computer Science', year:'2nd Year', section:'A',
-        email:'arjun@college.edu', username: u,
-        mentor:'Prof. Rajesh Kumar'
-      };
-      document.getElementById('dash-avatar').textContent = u[0].toUpperCase();
-      document.getElementById('dash-name').textContent = demo.name;
-      document.getElementById('dash-id').textContent = `Roll: ${demo.roll} · ${demo.year} · CSE-${demo.section}`;
-      document.getElementById('dash-username').textContent = demo.username;
-      document.getElementById('dash-email').textContent = demo.email;
-      document.getElementById('dash-branch').textContent = demo.branch;
-      document.getElementById('dash-section').textContent = demo.section;
-      document.getElementById('dash-mentor').textContent = demo.mentor;
+  try {
+    const res = await fetch('http://localhost:5000/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: u, password: p })
+    });
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      const student = data.student;
+      document.getElementById('dash-avatar').textContent = student.name.charAt(0).toUpperCase();
+      document.getElementById('dash-name').textContent = student.name;
+      document.getElementById('dash-id').textContent = `Roll: ${student.roll} · ${student.year} · CSE-${student.section}`;
+      document.getElementById('dash-username').textContent = student.username;
+      document.getElementById('dash-email').textContent = student.email;
+      document.getElementById('dash-branch').textContent = student.branch;
+      document.getElementById('dash-section').textContent = student.section;
+      document.getElementById('dash-mentor').textContent = "Pending Assignment";
       goTo('dashboard');
     } else {
-      showToast('Invalid credentials','warn');
+      showToast(data.message || 'Login failed', 'warn');
     }
-  }, 900);
+  } catch (err) {
+    showToast('Cannot connect to server. Is app.py running?', 'warn');
+  }
 }
 
 // ======== TEACHER LOGIN ========
-function doTeacherLogin() {
+async function doTeacherLogin() {
   const u = document.getElementById('t-user').value;
   const p = document.getElementById('t-pass').value;
   if (!u || !p) { showToast('Enter teacher credentials','warn'); return; }
-  showToast('Teacher portal coming soon — see connection guide below','warn');
+
+  showToast('Authenticating...','success');
+  try {
+    const res = await fetch('http://localhost:5000/api/teacher-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: u, password: p })
+    });
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      // Save teacher info formatted for the dashboard
+      const teacherForDashboard = {
+        name: data.teacher.name,
+        id: 'TCH-' + String(data.teacher.id).padStart(3, '0'),
+        email: data.teacher.email,
+        dept: data.teacher.department
+      };
+      localStorage.setItem('axiom_teacher', JSON.stringify(teacherForDashboard));
+      showToast('Login successful! Redirecting...', 'success');
+      setTimeout(() => {
+        window.location.href = 'fronted.html';
+      }, 800);
+    } else {
+      showToast(data.message || 'Login failed', 'warn');
+    }
+  } catch (err) {
+    showToast('Cannot connect to server. Is app.py running?', 'warn');
+  }
 }
 
 // ======== TOAST ========
