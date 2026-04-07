@@ -1,816 +1,1928 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AXIOM — Student Portal</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
-<style>
-:root {
-  --bg1:#0f0c29; --bg2:#302b63; --bg3:#24243e;
-  --glass:rgba(255,255,255,0.07);
-  --glass2:rgba(255,255,255,0.13);
-  --glass3:rgba(255,255,255,0.03);
-  --border:rgba(255,255,255,0.11);
-  --border2:rgba(255,255,255,0.2);
-  --text:#f0f4ff; --muted:rgba(255,255,255,0.45);
-  --muted2:rgba(255,255,255,0.22);
-  --green:#00f5a0; --green2:#00d68f;
-  --red:#ff6b8a; --amber:#ffd166;
-  --blue:#74b9ff; --purple:#a29bfe;
-  --pink:#fd79a8;
-  --mono:'DM Mono',monospace;
-  --sans:'DM Sans',sans-serif;
-}
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:var(--sans);min-height:100vh;
-  background:linear-gradient(135deg,var(--bg1) 0%,var(--bg2) 50%,var(--bg3) 100%);
-  color:var(--text);overflow-x:hidden;}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AXIOM — Student Portal</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Mono:wght@300;400;500&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg1: #0f0c29;
+      --bg2: #302b63;
+      --bg3: #24243e;
+      --glass: rgba(255, 255, 255, 0.07);
+      --glass2: rgba(255, 255, 255, 0.13);
+      --glass3: rgba(255, 255, 255, 0.03);
+      --border: rgba(255, 255, 255, 0.11);
+      --border2: rgba(255, 255, 255, 0.2);
+      --text: #f0f4ff;
+      --muted: rgba(255, 255, 255, 0.45);
+      --muted2: rgba(255, 255, 255, 0.22);
+      --green: #00f5a0;
+      --green2: #00d68f;
+      --red: #ff6b8a;
+      --amber: #ffd166;
+      --blue: #74b9ff;
+      --purple: #a29bfe;
+      --pink: #fd79a8;
+      --mono: 'DM Mono', monospace;
+      --sans: 'DM Sans', sans-serif;
+    }
 
-/* orbs */
-.orb{position:fixed;border-radius:50%;filter:blur(80px);opacity:.3;pointer-events:none;z-index:0;animation:orbF 14s ease-in-out infinite;}
-.orb1{width:500px;height:500px;background:#6c63ff;top:-120px;left:-160px;}
-.orb2{width:380px;height:380px;background:#fd79a8;bottom:-80px;right:-100px;animation-delay:-5s;}
-.orb3{width:260px;height:260px;background:#00cec9;top:45%;left:42%;animation-delay:-9s;}
-@keyframes orbF{0%,100%{transform:translate(0,0) scale(1);}40%{transform:translate(28px,-28px) scale(1.06);}70%{transform:translate(-18px,18px) scale(.94);}}
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-.glass{background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--border);}
-.glass2{background:var(--glass2);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid var(--border2);}
+    body {
+      font-family: var(--sans);
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 50%, var(--bg3) 100%);
+      color: var(--text);
+      overflow-x: hidden;
+    }
 
-/* ══ LOGIN ══ */
-#loginPage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:200;padding:20px;}
-.login-card{width:440px;border-radius:26px;padding:46px 42px;position:relative;z-index:1;animation:popIn .7s cubic-bezier(.34,1.56,.64,1);}
-@keyframes popIn{from{opacity:0;transform:translateY(40px) scale(.95);}to{opacity:1;transform:translateY(0) scale(1);}}
+    /* orbs */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: .3;
+      pointer-events: none;
+      z-index: 0;
+      animation: orbF 14s ease-in-out infinite;
+    }
 
-.ax-logo{text-align:center;margin-bottom:32px;}
-.ax-logo-text{font-family:var(--mono);font-size:34px;font-weight:500;letter-spacing:.22em;
-  background:linear-gradient(135deg,#a29bfe,#fd79a8,#74b9ff);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-  filter:drop-shadow(0 0 22px rgba(162,155,254,.5));}
-.ax-logo-sub{font-size:11px;color:var(--muted);letter-spacing:.12em;margin-top:5px;text-transform:uppercase;}
+    .orb1 {
+      width: 500px;
+      height: 500px;
+      background: #6c63ff;
+      top: -120px;
+      left: -160px;
+    }
 
-.login-title{font-size:20px;font-weight:700;text-align:center;margin-bottom:5px;}
-.login-sub{font-size:13px;color:var(--muted);text-align:center;margin-bottom:26px;}
+    .orb2 {
+      width: 380px;
+      height: 380px;
+      background: #fd79a8;
+      bottom: -80px;
+      right: -100px;
+      animation-delay: -5s;
+    }
 
-.field{position:relative;margin-bottom:14px;}
-.field-ico{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px;opacity:.5;}
-.field-inp{width:100%;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:12px;
-  padding:13px 14px 13px 42px;color:var(--text);font-family:var(--sans);font-size:14px;outline:none;transition:all .2s;}
-.field-inp:focus{border-color:rgba(162,155,254,.6);background:rgba(255,255,255,.1);box-shadow:0 0 0 3px rgba(162,155,254,.12);}
-.field-inp::placeholder{color:var(--muted2);}
+    .orb3 {
+      width: 260px;
+      height: 260px;
+      background: #00cec9;
+      top: 45%;
+      left: 42%;
+      animation-delay: -9s;
+    }
 
-.login-btn{width:100%;padding:14px;border-radius:12px;border:none;
-  background:linear-gradient(135deg,#a29bfe,#6c5ce7);color:#fff;
-  font-family:var(--sans);font-size:14px;font-weight:700;letter-spacing:.04em;
-  cursor:pointer;transition:all .2s;margin-top:6px;
-  box-shadow:0 8px 24px rgba(108,92,231,.4);}
-.login-btn:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(108,92,231,.5);}
+    @keyframes orbF {
 
-.login-hint{text-align:center;font-size:11px;color:var(--muted);margin-top:14px;font-family:var(--mono);}
-.login-err{background:rgba(255,107,138,.1);border:1px solid rgba(255,107,138,.3);border-radius:8px;
-  padding:10px 14px;font-size:12px;color:var(--red);margin-bottom:12px;display:none;text-align:center;}
+      0%,
+      100% {
+        transform: translate(0, 0) scale(1);
+      }
 
-/* ══ REGISTRATION WIZARD ══ */
-#regWizard{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:200;
-  background:rgba(0,0,0,.7);backdrop-filter:blur(10px);}
-#regWizard.open{display:flex;}
-.reg-card{width:520px;border-radius:22px;padding:36px;position:relative;z-index:1;animation:popIn .4s ease;}
+      40% {
+        transform: translate(28px, -28px) scale(1.06);
+      }
 
-.reg-steps{display:flex;gap:8px;margin-bottom:28px;align-items:center;}
-.reg-step{flex:1;height:3px;border-radius:3px;background:rgba(255,255,255,.1);transition:background .4s;}
-.reg-step.done{background:var(--green);}
-.reg-step.active{background:var(--purple);}
+      70% {
+        transform: translate(-18px, 18px) scale(.94);
+      }
+    }
 
-.reg-cam-wrap{border-radius:14px;overflow:hidden;background:#000;aspect-ratio:4/3;position:relative;margin-bottom:16px;}
-.reg-cam-wrap video{width:100%;height:100%;object-fit:cover;display:block;}
-.reg-cam-placeholder{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--muted);font-family:var(--mono);font-size:11px;min-height:200px;background:#050a10;}
-.cam-corner{position:absolute;width:22px;height:22px;border-style:solid;border-color:var(--green);}
-.cam-corner.tl{top:10px;left:10px;border-width:2px 0 0 2px;}
-.cam-corner.br{bottom:10px;right:10px;border-width:0 2px 2px 0;}
+    .glass {
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+    }
 
-.scan-ring{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-  width:140px;height:140px;border-radius:50%;
-  border:2px solid rgba(0,245,160,.4);
-  animation:scanPulse 2s ease-in-out infinite;}
-@keyframes scanPulse{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.5;}50%{transform:translate(-50%,-50%) scale(1.08);opacity:1;}}
+    .glass2 {
+      background: var(--glass2);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--border2);
+    }
 
-.prog-wrap{background:rgba(255,255,255,.06);border-radius:6px;height:8px;overflow:hidden;margin:10px 0;}
-.prog-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--green2),var(--green));transition:width .3s ease;}
+    /* ══ LOGIN ══ */
+    #loginPage {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      padding: 20px;
+    }
 
-/* ══ APP ══ */
-#appPage{display:none;min-height:100vh;position:relative;z-index:1;}
+    .login-card {
+      width: 440px;
+      border-radius: 26px;
+      padding: 46px 42px;
+      position: relative;
+      z-index: 1;
+      animation: popIn .7s cubic-bezier(.34, 1.56, .64, 1);
+    }
 
-.topnav{position:sticky;top:0;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;
-  z-index:50;border-bottom:1px solid var(--border);background:rgba(15,12,41,.65);backdrop-filter:blur(20px);}
-.nav-logo{font-family:var(--mono);font-size:16px;font-weight:500;letter-spacing:.16em;
-  background:linear-gradient(135deg,#a29bfe,#fd79a8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.nav-tabs{display:flex;gap:3px;background:var(--glass3);border:1px solid var(--border);border-radius:12px;padding:4px;}
-.nav-tab{padding:7px 14px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;
-  color:var(--muted);transition:all .2s;letter-spacing:.02em;border:none;background:none;display:flex;align-items:center;gap:5px;}
-.nav-tab:hover{color:var(--text);}
-.nav-tab.active{background:var(--glass2);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.2);}
-.nav-right{display:flex;align-items:center;gap:12px;}
-.stu-chip{display:flex;align-items:center;gap:8px;background:var(--glass);border:1px solid var(--border);border-radius:20px;padding:5px 12px 5px 5px;}
-.stu-avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#a29bfe,#fd79a8);display:flex;align-items:center;justify-content:center;font-size:12px;}
-.stu-name{font-size:12px;font-weight:600;}
-.logout-btn{background:rgba(255,107,138,.1);border:1px solid rgba(255,107,138,.2);border-radius:8px;
-  padding:6px 12px;color:var(--red);font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;}
-.logout-btn:hover{background:rgba(255,107,138,.2);}
+    @keyframes popIn {
+      from {
+        opacity: 0;
+        transform: translateY(40px) scale(.95);
+      }
 
-/* face not registered banner */
-.face-setup-banner{border-radius:14px;padding:16px 20px;margin:20px 24px;display:flex;align-items:center;gap:14px;
-  background:rgba(162,155,254,.1);border:1px solid rgba(162,155,254,.3);cursor:pointer;transition:all .2s;}
-.face-setup-banner:hover{background:rgba(162,155,254,.15);}
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
 
-/* ══ SECTIONS ══ */
-.section{display:none;padding:22px 24px;animation:fadeUp .3s ease;}
-.section.active{display:block;}
-@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+    .ax-logo {
+      text-align: center;
+      margin-bottom: 32px;
+    }
 
-/* welcome */
-.welcome-wrap{border-radius:18px;padding:24px 28px;margin-bottom:20px;position:relative;overflow:hidden;
-  background:linear-gradient(135deg,rgba(162,155,254,.14),rgba(253,121,168,.09));
-  border:1px solid rgba(162,155,254,.18);}
-.welcome-wrap::before{content:'';position:absolute;top:-40%;right:-5%;width:280px;height:280px;border-radius:50%;
-  background:radial-gradient(circle,rgba(162,155,254,.12),transparent 70%);}
-.w-greet{font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px;}
-.w-name{font-size:24px;font-weight:800;margin-bottom:4px;}
-.w-meta{font-family:var(--mono);font-size:10px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap;margin-top:6px;}
+    .ax-logo-text {
+      font-family: var(--mono);
+      font-size: 34px;
+      font-weight: 500;
+      letter-spacing: .22em;
+      background: linear-gradient(135deg, #a29bfe, #fd79a8, #74b9ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 22px rgba(162, 155, 254, .5));
+    }
 
-/* alert banners */
-.alert-b{border-radius:12px;padding:13px 17px;margin-bottom:12px;display:flex;align-items:center;gap:12px;}
-.alert-b.danger{background:rgba(255,107,138,.1);border:1px solid rgba(255,107,138,.3);animation:glow 3s infinite;}
-.alert-b.warn{background:rgba(255,209,102,.08);border:1px solid rgba(255,209,102,.25);}
-.alert-b.info{background:rgba(116,185,255,.08);border:1px solid rgba(116,185,255,.22);}
-@keyframes glow{0%,100%{box-shadow:none;}50%{box-shadow:0 0 18px rgba(255,107,138,.15);}}
+    .ax-logo-sub {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: .12em;
+      margin-top: 5px;
+      text-transform: uppercase;
+    }
 
-/* stats */
-.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
-.stat-g{border-radius:14px;padding:18px;text-align:center;transition:transform .2s;position:relative;overflow:hidden;}
-.stat-g:hover{transform:translateY(-3px);}
-.stat-num{font-size:32px;font-weight:800;line-height:1;margin-bottom:5px;}
-.stat-lbl{font-size:9px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;font-family:var(--mono);}
+    .login-title {
+      font-size: 20px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 5px;
+    }
 
-/* ── ATTENDANCE SESSION CARDS ── */
-.session-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:22px;}
-.session-card{border-radius:16px;padding:20px;position:relative;overflow:hidden;transition:all .2s;cursor:pointer;}
-.session-card:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(0,0,0,.3);}
-.session-card.open-session{border:1px solid rgba(0,245,160,.35);background:rgba(0,245,160,.07);}
-.session-card.closed-session{border:1px solid var(--border);opacity:.6;}
-.session-card.marked-session{border:1px solid rgba(0,245,160,.2);background:rgba(0,245,160,.04);}
+    .login-sub {
+      font-size: 13px;
+      color: var(--muted);
+      text-align: center;
+      margin-bottom: 26px;
+    }
 
-.sess-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;}
-.sess-icon{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;}
-.sess-status-pill{font-family:var(--mono);font-size:9px;font-weight:600;padding:3px 9px;border-radius:20px;letter-spacing:.06em;text-transform:uppercase;}
-.sess-status-pill.open{background:rgba(0,245,160,.15);color:var(--green);border:1px solid rgba(0,245,160,.3);animation:pillPulse 2s infinite;}
-.sess-status-pill.closed{background:rgba(255,255,255,.05);color:var(--muted);}
-.sess-status-pill.marked{background:rgba(0,245,160,.1);color:var(--green2);}
-.sess-status-pill.late{background:rgba(255,209,102,.12);color:var(--amber);border:1px solid rgba(255,209,102,.3);}
-@keyframes pillPulse{0%,100%{opacity:1;}50%{opacity:.6;}}
+    .field {
+      position: relative;
+      margin-bottom: 14px;
+    }
 
-.sess-name{font-size:15px;font-weight:700;margin-bottom:3px;}
-.sess-meta{font-family:var(--mono);font-size:10px;color:var(--muted);}
-.sess-time-info{margin-top:10px;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid var(--border);}
-.sess-time-row{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--muted);margin-bottom:3px;}
-.sess-time-row:last-child{margin-bottom:0;}
-.sess-time-val{color:var(--text);font-weight:500;}
+    .field-ico {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 16px;
+      opacity: .5;
+    }
 
-.mark-btn{width:100%;margin-top:12px;padding:10px;border-radius:10px;border:none;
-  font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.04em;cursor:pointer;transition:all .2s;
-  display:flex;align-items:center;justify-content:center;gap:7px;}
-.mark-btn.active-btn{background:var(--green);color:#000;box-shadow:0 4px 16px rgba(0,245,160,.3);}
-.mark-btn.active-btn:hover{background:#00ffaa;transform:translateY(-1px);}
-.mark-btn.disabled-btn{background:rgba(255,255,255,.05);color:var(--muted);cursor:not-allowed;}
-.mark-btn.done-btn{background:rgba(0,245,160,.1);color:var(--green);border:1px solid rgba(0,245,160,.2);cursor:default;}
+    .field-inp {
+      width: 100%;
+      background: rgba(255, 255, 255, .06);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 13px 14px 13px 42px;
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 14px;
+      outline: none;
+      transition: all .2s;
+    }
 
-/* late badge */
-.late-tag{display:inline-flex;align-items:center;gap:5px;background:rgba(255,209,102,.1);
-  border:1px solid rgba(255,209,102,.25);border-radius:6px;padding:3px 8px;
-  font-family:var(--mono);font-size:9px;color:var(--amber);margin-top:6px;}
+    .field-inp:focus {
+      border-color: rgba(162, 155, 254, .6);
+      background: rgba(255, 255, 255, .1);
+      box-shadow: 0 0 0 3px rgba(162, 155, 254, .12);
+    }
 
-/* ── FACE SCAN MODAL ── */
-#scanModal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:300;
-  background:rgba(0,0,0,.8);backdrop-filter:blur(10px);}
-#scanModal.open{display:flex;}
-.scan-card{width:480px;border-radius:22px;padding:28px;position:relative;z-index:1;animation:popIn .3s ease;}
-.scan-cam{border-radius:14px;overflow:hidden;background:#000;aspect-ratio:4/3;position:relative;}
-.scan-cam video{width:100%;height:100%;object-fit:cover;display:block;}
-.scan-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;}
-.scan-face-ring{width:160px;height:160px;border-radius:50%;border:2px solid var(--green);box-shadow:0 0 0 4px rgba(0,245,160,.1);animation:scanPulse 1.5s infinite;}
-.scan-status-bar{position:absolute;bottom:0;left:0;right:0;padding:10px 14px;
-  background:linear-gradient(transparent,rgba(0,0,0,.8));
-  display:flex;align-items:center;justify-content:space-between;font-family:var(--mono);font-size:10px;}
-.scan-result-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  background:rgba(0,0,0,.7);border-radius:14px;opacity:0;transition:opacity .3s;}
-.scan-result-overlay.show{opacity:1;}
-.scan-result-icon{font-size:56px;margin-bottom:10px;animation:bounceIn .4s ease;}
-@keyframes bounceIn{0%{transform:scale(0);}60%{transform:scale(1.15);}100%{transform:scale(1);}}
+    .field-inp::placeholder {
+      color: var(--muted2);
+    }
 
-/* ── SUBJECT CARDS ── */
-.subj-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:22px;}
-.subj-card{border-radius:16px;padding:20px;position:relative;overflow:hidden;transition:transform .2s;}
-.subj-card:hover{transform:translateY(-3px);}
+    .login-btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(135deg, #a29bfe, #6c5ce7);
+      color: #fff;
+      font-family: var(--sans);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      cursor: pointer;
+      transition: all .2s;
+      margin-top: 6px;
+      box-shadow: 0 8px 24px rgba(108, 92, 231, .4);
+    }
 
-.circ-prog{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative;flex-shrink:0;}
-.circ-inner{position:absolute;width:40px;height:40px;border-radius:50%;background:var(--glass);backdrop-filter:blur(4px);}
-.circ-val{position:relative;z-index:1;font-family:var(--mono);font-size:11px;font-weight:700;}
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(108, 92, 231, .5);
+    }
 
-.mini-bar{height:4px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:8px;}
-.mini-fill{height:100%;border-radius:4px;transition:width 1s cubic-bezier(.34,1.56,.64,1);}
+    .login-hint {
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 14px;
+      font-family: var(--mono);
+    }
 
-/* ── STREAK ── */
-.streak-row{display:flex;gap:4px;flex-wrap:wrap;margin-top:10px;}
-.streak-dot{width:14px;height:14px;border-radius:4px;transition:transform .1s;}
-.streak-dot:hover{transform:scale(1.3);}
-.streak-dot.p{background:var(--green);}
-.streak-dot.a{background:rgba(255,107,138,.5);}
-.streak-dot.f{background:rgba(255,255,255,.08);}
+    .login-err {
+      background: rgba(255, 107, 138, .1);
+      border: 1px solid rgba(255, 107, 138, .3);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 12px;
+      color: var(--red);
+      margin-bottom: 12px;
+      display: none;
+      text-align: center;
+    }
 
-/* ── PER-LECTURE TABLE ── */
-.lec-table-wrap{overflow-x:auto;}
-table{width:100%;border-collapse:collapse;font-size:12px;}
-thead th{background:rgba(255,255,255,.04);padding:10px 14px;text-align:left;font-family:var(--mono);
-  font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);}
-tbody tr{border-bottom:1px solid rgba(255,255,255,.04);transition:background .15s;}
-tbody tr:hover{background:rgba(255,255,255,.02);}
-tbody td{padding:11px 14px;}
+    /* ══ REGISTRATION WIZARD ══ */
+    #regWizard {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      background: rgba(0, 0, 0, .7);
+      backdrop-filter: blur(10px);
+    }
 
-/* badge */
-.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;}
-.b-present{background:rgba(0,245,160,.1);color:var(--green);}
-.b-absent{background:rgba(255,107,138,.1);color:var(--red);}
-.b-late{background:rgba(255,209,102,.1);color:var(--amber);}
-.b-open{background:rgba(162,155,254,.1);color:var(--purple);border:1px solid rgba(162,155,254,.2);}
+    #regWizard.open {
+      display: flex;
+    }
 
-/* two col */
-.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-.three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+    .reg-card {
+      width: 520px;
+      border-radius: 22px;
+      padding: 36px;
+      position: relative;
+      z-index: 1;
+      animation: popIn .4s ease;
+    }
 
-/* card */
-.card{border-radius:16px;overflow:hidden;}
-.card-hdr{padding:13px 17px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
-.card-ttl{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
-.card-body{padding:16px;}
+    .reg-steps {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 28px;
+      align-items: center;
+    }
 
-/* profile */
-.prof-hero{border-radius:18px;padding:26px;text-align:center;margin-bottom:18px;
-  background:linear-gradient(135deg,rgba(162,155,254,.12),rgba(253,121,168,.08));
-  border:1px solid rgba(162,155,254,.15);}
-.prof-av{width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,#a29bfe,#fd79a8);
-  display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 12px;
-  box-shadow:0 8px 24px rgba(162,155,254,.3);}
-.prof-name{font-size:20px;font-weight:700;margin-bottom:3px;}
-.prof-id{font-family:var(--mono);font-size:11px;color:var(--muted);}
+    .reg-step {
+      flex: 1;
+      height: 3px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, .1);
+      transition: background .4s;
+    }
 
-/* face reg status */
-.face-reg-card{border-radius:14px;padding:18px;display:flex;align-items:center;gap:14px;}
-.face-reg-card.registered{background:rgba(0,245,160,.08);border:1px solid rgba(0,245,160,.2);}
-.face-reg-card.not-reg{background:rgba(255,107,138,.08);border:1px solid rgba(255,107,138,.2);}
+    .reg-step.done {
+      background: var(--green);
+    }
 
-/* scrollbar */
-::-webkit-scrollbar{width:4px;}
-::-webkit-scrollbar-track{background:transparent;}
-::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:4px;}
+    .reg-step.active {
+      background: var(--purple);
+    }
 
-/* toast */
-.toast-box{position:fixed;bottom:20px;right:20px;display:flex;flex-direction:column;gap:8px;z-index:1000;}
-.toast{background:rgba(15,12,41,.9);backdrop-filter:blur(16px);border-radius:10px;padding:11px 16px;
-  font-size:12px;display:flex;align-items:center;gap:9px;animation:toastIn .3s ease;max-width:280px;
-  box-shadow:0 8px 32px rgba(0,0,0,.4);}
-@keyframes toastIn{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
-.toast.ok{border-left:3px solid var(--green);}
-.toast.err{border-left:3px solid var(--red);}
-.toast.inf{border-left:3px solid var(--purple);}
-.toast.warn{border-left:3px solid var(--amber);}
+    .reg-cam-wrap {
+      border-radius: 14px;
+      overflow: hidden;
+      background: #000;
+      aspect-ratio: 4/3;
+      position: relative;
+      margin-bottom: 16px;
+    }
 
-/* btn */
-.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:8px;
-  font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
-  cursor:pointer;border:none;transition:all .2s;}
-.btn-purple{background:var(--purple);color:#fff;}
-.btn-purple:hover{opacity:.9;transform:translateY(-1px);}
-.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);}
-.btn-ghost:hover{color:var(--text);border-color:var(--border2);}
-.btn-red{background:rgba(255,107,138,.15);color:var(--red);border:1px solid rgba(255,107,138,.2);}
-</style>
+    .reg-cam-wrap video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .reg-cam-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 11px;
+      min-height: 200px;
+      background: #050a10;
+    }
+
+    .cam-corner {
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      border-style: solid;
+      border-color: var(--green);
+    }
+
+    .cam-corner.tl {
+      top: 10px;
+      left: 10px;
+      border-width: 2px 0 0 2px;
+    }
+
+    .cam-corner.br {
+      bottom: 10px;
+      right: 10px;
+      border-width: 0 2px 2px 0;
+    }
+
+    .scan-ring {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      border: 2px solid rgba(0, 245, 160, .4);
+      animation: scanPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes scanPulse {
+
+      0%,
+      100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: .5;
+      }
+
+      50% {
+        transform: translate(-50%, -50%) scale(1.08);
+        opacity: 1;
+      }
+    }
+
+    .prog-wrap {
+      background: rgba(255, 255, 255, .06);
+      border-radius: 6px;
+      height: 8px;
+      overflow: hidden;
+      margin: 10px 0;
+    }
+
+    .prog-fill {
+      height: 100%;
+      border-radius: 6px;
+      background: linear-gradient(90deg, var(--green2), var(--green));
+      transition: width .3s ease;
+    }
+
+    /* ══ APP ══ */
+    #appPage {
+      display: none;
+      min-height: 100vh;
+      position: relative;
+      z-index: 1;
+    }
+
+    .topnav {
+      position: sticky;
+      top: 0;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 50;
+      border-bottom: 1px solid var(--border);
+      background: rgba(15, 12, 41, .65);
+      backdrop-filter: blur(20px);
+    }
+
+    .nav-logo {
+      font-family: var(--mono);
+      font-size: 16px;
+      font-weight: 500;
+      letter-spacing: .16em;
+      background: linear-gradient(135deg, #a29bfe, #fd79a8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 3px;
+      background: var(--glass3);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 4px;
+    }
+
+    .nav-tab {
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--muted);
+      transition: all .2s;
+      letter-spacing: .02em;
+      border: none;
+      background: none;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .nav-tab:hover {
+      color: var(--text);
+    }
+
+    .nav-tab.active {
+      background: var(--glass2);
+      color: var(--text);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .2);
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .stu-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 5px 12px 5px 5px;
+    }
+
+    .stu-avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #a29bfe, #fd79a8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+
+    .stu-name {
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .logout-btn {
+      background: rgba(255, 107, 138, .1);
+      border: 1px solid rgba(255, 107, 138, .2);
+      border-radius: 8px;
+      padding: 6px 12px;
+      color: var(--red);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .logout-btn:hover {
+      background: rgba(255, 107, 138, .2);
+    }
+
+    /* face not registered banner */
+    .face-setup-banner {
+      border-radius: 14px;
+      padding: 16px 20px;
+      margin: 20px 24px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: rgba(162, 155, 254, .1);
+      border: 1px solid rgba(162, 155, 254, .3);
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .face-setup-banner:hover {
+      background: rgba(162, 155, 254, .15);
+    }
+
+    /* ══ SECTIONS ══ */
+    .section {
+      display: none;
+      padding: 22px 24px;
+      animation: fadeUp .3s ease;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(14px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* welcome */
+    .welcome-wrap {
+      border-radius: 18px;
+      padding: 24px 28px;
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, rgba(162, 155, 254, .14), rgba(253, 121, 168, .09));
+      border: 1px solid rgba(162, 155, 254, .18);
+    }
+
+    .welcome-wrap::before {
+      content: '';
+      position: absolute;
+      top: -40%;
+      right: -5%;
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(162, 155, 254, .12), transparent 70%);
+    }
+
+    .w-greet {
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+
+    .w-name {
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .w-meta {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+
+    /* alert banners */
+    .alert-b {
+      border-radius: 12px;
+      padding: 13px 17px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .alert-b.danger {
+      background: rgba(255, 107, 138, .1);
+      border: 1px solid rgba(255, 107, 138, .3);
+      animation: glow 3s infinite;
+    }
+
+    .alert-b.warn {
+      background: rgba(255, 209, 102, .08);
+      border: 1px solid rgba(255, 209, 102, .25);
+    }
+
+    .alert-b.info {
+      background: rgba(116, 185, 255, .08);
+      border: 1px solid rgba(116, 185, 255, .22);
+    }
+
+    @keyframes glow {
+
+      0%,
+      100% {
+        box-shadow: none;
+      }
+
+      50% {
+        box-shadow: 0 0 18px rgba(255, 107, 138, .15);
+      }
+    }
+
+    /* stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat-g {
+      border-radius: 14px;
+      padding: 18px;
+      text-align: center;
+      transition: transform .2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-g:hover {
+      transform: translateY(-3px);
+    }
+
+    .stat-num {
+      font-size: 32px;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 5px;
+    }
+
+    .stat-lbl {
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      font-family: var(--mono);
+    }
+
+    /* ── ATTENDANCE SESSION CARDS ── */
+    .session-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .session-card {
+      border-radius: 16px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      transition: all .2s;
+      cursor: pointer;
+    }
+
+    .session-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, .3);
+    }
+
+    .session-card.open-session {
+      border: 1px solid rgba(0, 245, 160, .35);
+      background: rgba(0, 245, 160, .07);
+    }
+
+    .session-card.closed-session {
+      border: 1px solid var(--border);
+      opacity: .6;
+    }
+
+    .session-card.marked-session {
+      border: 1px solid rgba(0, 245, 160, .2);
+      background: rgba(0, 245, 160, .04);
+    }
+
+    .sess-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .sess-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .sess-status-pill {
+      font-family: var(--mono);
+      font-size: 9px;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 20px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    .sess-status-pill.open {
+      background: rgba(0, 245, 160, .15);
+      color: var(--green);
+      border: 1px solid rgba(0, 245, 160, .3);
+      animation: pillPulse 2s infinite;
+    }
+
+    .sess-status-pill.closed {
+      background: rgba(255, 255, 255, .05);
+      color: var(--muted);
+    }
+
+    .sess-status-pill.marked {
+      background: rgba(0, 245, 160, .1);
+      color: var(--green2);
+    }
+
+    .sess-status-pill.late {
+      background: rgba(255, 209, 102, .12);
+      color: var(--amber);
+      border: 1px solid rgba(255, 209, 102, .3);
+    }
+
+    @keyframes pillPulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: .6;
+      }
+    }
+
+    .sess-name {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 3px;
+    }
+
+    .sess-meta {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    .sess-time-info {
+      margin-top: 10px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .04);
+      border: 1px solid var(--border);
+    }
+
+    .sess-time-row {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--mono);
+      font-size: 9px;
+      color: var(--muted);
+      margin-bottom: 3px;
+    }
+
+    .sess-time-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .sess-time-val {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .mark-btn {
+      width: 100%;
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      cursor: pointer;
+      transition: all .2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+    }
+
+    .mark-btn.active-btn {
+      background: var(--green);
+      color: #000;
+      box-shadow: 0 4px 16px rgba(0, 245, 160, .3);
+    }
+
+    .mark-btn.active-btn:hover {
+      background: #00ffaa;
+      transform: translateY(-1px);
+    }
+
+    .mark-btn.disabled-btn {
+      background: rgba(255, 255, 255, .05);
+      color: var(--muted);
+      cursor: not-allowed;
+    }
+
+    .mark-btn.done-btn {
+      background: rgba(0, 245, 160, .1);
+      color: var(--green);
+      border: 1px solid rgba(0, 245, 160, .2);
+      cursor: default;
+    }
+
+    /* late badge */
+    .late-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(255, 209, 102, .1);
+      border: 1px solid rgba(255, 209, 102, .25);
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-family: var(--mono);
+      font-size: 9px;
+      color: var(--amber);
+      margin-top: 6px;
+    }
+
+    /* ── FACE SCAN MODAL ── */
+    #scanModal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 300;
+      background: rgba(0, 0, 0, .8);
+      backdrop-filter: blur(10px);
+    }
+
+    #scanModal.open {
+      display: flex;
+    }
+
+    .scan-card {
+      width: 480px;
+      border-radius: 22px;
+      padding: 28px;
+      position: relative;
+      z-index: 1;
+      animation: popIn .3s ease;
+    }
+
+    .scan-cam {
+      border-radius: 14px;
+      overflow: hidden;
+      background: #000;
+      aspect-ratio: 4/3;
+      position: relative;
+    }
+
+    .scan-cam video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .scan-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    .scan-face-ring {
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      border: 2px solid var(--green);
+      box-shadow: 0 0 0 4px rgba(0, 245, 160, .1);
+      animation: scanPulse 1.5s infinite;
+    }
+
+    .scan-status-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 10px 14px;
+      background: linear-gradient(transparent, rgba(0, 0, 0, .8));
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--mono);
+      font-size: 10px;
+    }
+
+    .scan-result-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, .7);
+      border-radius: 14px;
+      opacity: 0;
+      transition: opacity .3s;
+    }
+
+    .scan-result-overlay.show {
+      opacity: 1;
+    }
+
+    .scan-result-icon {
+      font-size: 56px;
+      margin-bottom: 10px;
+      animation: bounceIn .4s ease;
+    }
+
+    @keyframes bounceIn {
+      0% {
+        transform: scale(0);
+      }
+
+      60% {
+        transform: scale(1.15);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    /* ── SUBJECT CARDS ── */
+    .subj-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .subj-card {
+      border-radius: 16px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      transition: transform .2s;
+    }
+
+    .subj-card:hover {
+      transform: translateY(-3px);
+    }
+
+    .circ-prog {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .circ-inner {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--glass);
+      backdrop-filter: blur(4px);
+    }
+
+    .circ-val {
+      position: relative;
+      z-index: 1;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .mini-bar {
+      height: 4px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, .08);
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .mini-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 1s cubic-bezier(.34, 1.56, .64, 1);
+    }
+
+    /* ── STREAK ── */
+    .streak-row {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .streak-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+      transition: transform .1s;
+    }
+
+    .streak-dot:hover {
+      transform: scale(1.3);
+    }
+
+    .streak-dot.p {
+      background: var(--green);
+    }
+
+    .streak-dot.a {
+      background: rgba(255, 107, 138, .5);
+    }
+
+    .streak-dot.f {
+      background: rgba(255, 255, 255, .08);
+    }
+
+    /* ── PER-LECTURE TABLE ── */
+    .lec-table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    thead th {
+      background: rgba(255, 255, 255, .04);
+      padding: 10px 14px;
+      text-align: left;
+      font-family: var(--mono);
+      font-size: 8px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+
+    tbody tr {
+      border-bottom: 1px solid rgba(255, 255, 255, .04);
+      transition: background .15s;
+    }
+
+    tbody tr:hover {
+      background: rgba(255, 255, 255, .02);
+    }
+
+    tbody td {
+      padding: 11px 14px;
+    }
+
+    /* badge */
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-family: var(--mono);
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    .b-present {
+      background: rgba(0, 245, 160, .1);
+      color: var(--green);
+    }
+
+    .b-absent {
+      background: rgba(255, 107, 138, .1);
+      color: var(--red);
+    }
+
+    .b-late {
+      background: rgba(255, 209, 102, .1);
+      color: var(--amber);
+    }
+
+    .b-open {
+      background: rgba(162, 155, 254, .1);
+      color: var(--purple);
+      border: 1px solid rgba(162, 155, 254, .2);
+    }
+
+    /* two col */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .three-col {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    /* card */
+    .card {
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .card-hdr {
+      padding: 13px 17px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-ttl {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .card-body {
+      padding: 16px;
+    }
+
+    /* profile */
+    .prof-hero {
+      border-radius: 18px;
+      padding: 26px;
+      text-align: center;
+      margin-bottom: 18px;
+      background: linear-gradient(135deg, rgba(162, 155, 254, .12), rgba(253, 121, 168, .08));
+      border: 1px solid rgba(162, 155, 254, .15);
+    }
+
+    .prof-av {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #a29bfe, #fd79a8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin: 0 auto 12px;
+      box-shadow: 0 8px 24px rgba(162, 155, 254, .3);
+    }
+
+    .prof-name {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 3px;
+    }
+
+    .prof-id {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* face reg status */
+    .face-reg-card {
+      border-radius: 14px;
+      padding: 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .face-reg-card.registered {
+      background: rgba(0, 245, 160, .08);
+      border: 1px solid rgba(0, 245, 160, .2);
+    }
+
+    .face-reg-card.not-reg {
+      background: rgba(255, 107, 138, .08);
+      border: 1px solid rgba(255, 107, 138, .2);
+    }
+
+    /* scrollbar */
+    ::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, .1);
+      border-radius: 4px;
+    }
+
+    /* toast */
+    .toast-box {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 1000;
+    }
+
+    .toast {
+      background: rgba(15, 12, 41, .9);
+      backdrop-filter: blur(16px);
+      border-radius: 10px;
+      padding: 11px 16px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      animation: toastIn .3s ease;
+      max-width: 280px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, .4);
+    }
+
+    @keyframes toastIn {
+      from {
+        opacity: 0;
+        transform: translateY(14px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .toast.ok {
+      border-left: 3px solid var(--green);
+    }
+
+    .toast.err {
+      border-left: 3px solid var(--red);
+    }
+
+    .toast.inf {
+      border-left: 3px solid var(--purple);
+    }
+
+    .toast.warn {
+      border-left: 3px solid var(--amber);
+    }
+
+    /* btn */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-family: var(--sans);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      cursor: pointer;
+      border: none;
+      transition: all .2s;
+    }
+
+    .btn-purple {
+      background: var(--purple);
+      color: #fff;
+    }
+
+    .btn-purple:hover {
+      opacity: .9;
+      transform: translateY(-1px);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+
+    .btn-ghost:hover {
+      color: var(--text);
+      border-color: var(--border2);
+    }
+
+    .btn-red {
+      background: rgba(255, 107, 138, .15);
+      color: var(--red);
+      border: 1px solid rgba(255, 107, 138, .2);
+    }
+  </style>
 </head>
+
 <body>
 
-<!-- orbs -->
-<div class="orb orb1"></div>
-<div class="orb orb2"></div>
-<div class="orb orb3"></div>
-<div class="toast-box" id="toastBox"></div>
+  <!-- orbs -->
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+  <div class="toast-box" id="toastBox"></div>
 
-<!-- ════════════════════════════════
+  <!-- ════════════════════════════════
      LOGIN
 ════════════════════════════════ -->
-<div id="loginPage">
-  <div class="login-card glass2">
-    <div class="ax-logo">
-      <div class="ax-logo-text">AXIOM</div>
-      <div class="ax-logo-sub">🎓 Student Portal · Face Recognition</div>
+  <div id="loginPage">
+    <div class="login-card glass2">
+      <div class="ax-logo">
+        <div class="ax-logo-text">AXIOM</div>
+        <div class="ax-logo-sub">🎓 Student Portal · Face Recognition</div>
+      </div>
+      <div class="login-title">Welcome Back 👋</div>
+      <div class="login-sub">Sign in with your student credentials</div>
+      <div class="login-err" id="loginErr">❌ Invalid Student ID or Password</div>
+      <div class="field">
+        <span class="field-ico">🎓</span>
+        <input class="field-inp" id="loginId" placeholder="Student ID  (e.g. CS2024101)" type="text">
+      </div>
+      <div class="field">
+        <span class="field-ico">🔒</span>
+        <input class="field-inp" id="loginPass" placeholder="Password" type="password">
+      </div>
+      <button class="login-btn" onclick="doLogin()">Sign In →</button>
+      <div class="login-hint">Demo → ID: <strong>CS2024101</strong> · Pass: <strong>axiom123</strong></div>
     </div>
-    <div class="login-title">Welcome Back 👋</div>
-    <div class="login-sub">Sign in with your student credentials</div>
-    <div class="login-err" id="loginErr">❌ Invalid Student ID or Password</div>
-    <div class="field">
-      <span class="field-ico">🎓</span>
-      <input class="field-inp" id="loginId" placeholder="Student ID  (e.g. CS2024101)" type="text">
-    </div>
-    <div class="field">
-      <span class="field-ico">🔒</span>
-      <input class="field-inp" id="loginPass" placeholder="Password" type="password">
-    </div>
-    <button class="login-btn" onclick="doLogin()">Sign In →</button>
-    <div class="login-hint">Demo → ID: <strong>CS2024101</strong> · Pass: <strong>axiom123</strong></div>
   </div>
-</div>
 
-<!-- ════════════════════════════════
+  <!-- ════════════════════════════════
      FACE REGISTRATION WIZARD
 ════════════════════════════════ -->
-<div id="regWizard">
-  <div class="reg-card glass2">
-    <div style="margin-bottom:20px">
-      <div style="font-size:17px;font-weight:700;margin-bottom:4px" id="wizTitle">📸 Face Registration</div>
-      <div style="font-size:12px;color:var(--muted)" id="wizSub">Set up your face profile to mark attendance</div>
-    </div>
-    <div class="reg-steps" id="regSteps">
-      <div class="reg-step active" id="rs0"></div>
-      <div class="reg-step" id="rs1"></div>
-      <div class="reg-step" id="rs2"></div>
-    </div>
+  <div id="regWizard">
+    <div class="reg-card glass2">
+      <div style="margin-bottom:20px">
+        <div style="font-size:17px;font-weight:700;margin-bottom:4px" id="wizTitle">📸 Face Registration</div>
+        <div style="font-size:12px;color:var(--muted)" id="wizSub">Set up your face profile to mark attendance</div>
+      </div>
+      <div class="reg-steps" id="regSteps">
+        <div class="reg-step active" id="rs0"></div>
+        <div class="reg-step" id="rs1"></div>
+        <div class="reg-step" id="rs2"></div>
+      </div>
 
-    <!-- Step 0: Intro -->
-    <div id="wizStep0">
-      <div style="text-align:center;padding:20px 0">
-        <div style="font-size:52px;margin-bottom:14px">🤳</div>
-        <div style="font-size:15px;font-weight:700;margin-bottom:8px">One-Time Face Setup</div>
-        <div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:22px">
-          AXIOM uses your facial geometry — symmetry, ratios and landmarks — to recognize you.<br><br>
-          This setup takes about <strong style="color:var(--green)">10 seconds</strong> and only needs to be done once.
+      <!-- Step 0: Intro -->
+      <div id="wizStep0">
+        <div style="text-align:center;padding:20px 0">
+          <div style="font-size:52px;margin-bottom:14px">🤳</div>
+          <div style="font-size:15px;font-weight:700;margin-bottom:8px">One-Time Face Setup</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:22px">
+            AXIOM uses your facial geometry — symmetry, ratios and landmarks — to recognize you.<br><br>
+            This setup takes about <strong style="color:var(--green)">10 seconds</strong> and only needs to be done
+            once.
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:22px">
+            <div
+              style="background:var(--glass3);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
+              <div style="font-size:22px;margin-bottom:5px">💡</div>
+              <div style="font-size:10px;color:var(--muted)">Good lighting</div>
+            </div>
+            <div
+              style="background:var(--glass3);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
+              <div style="font-size:22px;margin-bottom:5px">👁️</div>
+              <div style="font-size:10px;color:var(--muted)">Look straight ahead</div>
+            </div>
+            <div
+              style="background:var(--glass3);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
+              <div style="font-size:22px;margin-bottom:5px">😶</div>
+              <div style="font-size:10px;color:var(--muted)">Neutral expression</div>
+            </div>
+          </div>
+          <button class="btn btn-purple" style="width:100%;justify-content:center;padding:13px"
+            onclick="wizNext()">Start Face Setup 📸</button>
+          <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:8px"
+            onclick="closeWizard()">Skip for now</button>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:22px">
-          <div style="background:var(--glass3);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
-            <div style="font-size:22px;margin-bottom:5px">💡</div>
-            <div style="font-size:10px;color:var(--muted)">Good lighting</div>
+      </div>
+
+      <!-- Step 1: Camera scan -->
+      <div id="wizStep1" style="display:none">
+        <div class="reg-cam-wrap" style="min-height:220px">
+          <div class="reg-cam-placeholder" id="regPlaceholder">
+            <div style="font-size:36px;opacity:.3">📷</div>
+            <div>Starting camera...</div>
           </div>
-          <div style="background:var(--glass3);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
-            <div style="font-size:22px;margin-bottom:5px">👁️</div>
-            <div style="font-size:10px;color:var(--muted)">Look straight ahead</div>
-          </div>
-          <div style="background:var(--glass3);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
-            <div style="font-size:22px;margin-bottom:5px">😶</div>
-            <div style="font-size:10px;color:var(--muted)">Neutral expression</div>
+          <video id="regVideo" style="display:none;width:100%;height:100%;object-fit:cover"></video>
+          <div class="cam-corner tl"></div>
+          <div class="cam-corner br"></div>
+          <div class="scan-ring" id="scanRing" style="display:none"></div>
+          <div
+            style="position:absolute;bottom:0;left:0;right:0;padding:8px 12px;background:linear-gradient(transparent,rgba(0,0,0,.8));font-family:var(--mono);font-size:10px;display:flex;justify-content:space-between"
+            id="camOverlay" style="display:none">
+            <span style="color:var(--green)" id="regSampleTxt">Preparing...</span>
+            <span style="color:var(--muted)">AXIOM SCAN</span>
           </div>
         </div>
-        <button class="btn btn-purple" style="width:100%;justify-content:center;padding:13px" onclick="wizNext()">Start Face Setup 📸</button>
-        <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:8px" onclick="closeWizard()">Skip for now</button>
+        <div
+          style="display:flex;justify-content:space-between;margin-bottom:6px;font-family:var(--mono);font-size:9px;color:var(--muted)">
+          <span>CAPTURING SAMPLES</span>
+          <span id="regPct">0%</span>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-fill" id="regProgBar" style="width:0%"></div>
+        </div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--muted);text-align:center;margin-top:6px"
+          id="regHint">Position your face in the camera</div>
+        <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:12px"
+          onclick="cancelReg()">Cancel</button>
+      </div>
+
+      <!-- Step 2: Success -->
+      <div id="wizStep2" style="display:none;text-align:center;padding:16px 0">
+        <div style="font-size:56px;margin-bottom:12px;animation:bounceIn .5s ease">✅</div>
+        <div style="font-size:17px;font-weight:700;color:var(--green);margin-bottom:6px">Face Registered!</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:20px">Your facial profile has been saved
+          successfully.</div>
+        <div
+          style="background:var(--glass3);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:20px;text-align:left"
+          id="regRatioDisplay"></div>
+        <button class="btn btn-purple" style="width:100%;justify-content:center;padding:12px" onclick="closeWizard()">Go
+          to Dashboard 🚀</button>
       </div>
     </div>
+  </div>
 
-    <!-- Step 1: Camera scan -->
-    <div id="wizStep1" style="display:none">
-      <div class="reg-cam-wrap" style="min-height:220px">
-        <div class="reg-cam-placeholder" id="regPlaceholder">
+  <!-- ════════════════════════════════
+     FACE SCAN MODAL (attendance)
+════════════════════════════════ -->
+  <div id="scanModal">
+    <div class="scan-card glass2">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div>
+          <div style="font-size:15px;font-weight:700" id="scanModalTitle">Mark Attendance</div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:2px" id="scanModalMeta">—
+          </div>
+        </div>
+        <button onclick="closeScanModal()"
+          style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px;border-radius:4px">✕</button>
+      </div>
+
+      <div class="scan-cam">
+        <div
+          style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--muted);font-family:var(--mono);font-size:11px;min-height:200px;background:#050a10"
+          id="scanPlaceholder">
           <div style="font-size:36px;opacity:.3">📷</div>
           <div>Starting camera...</div>
         </div>
-        <video id="regVideo" style="display:none;width:100%;height:100%;object-fit:cover"></video>
-        <div class="cam-corner tl"></div>
-        <div class="cam-corner br"></div>
-        <div class="scan-ring" id="scanRing" style="display:none"></div>
-        <div style="position:absolute;bottom:0;left:0;right:0;padding:8px 12px;background:linear-gradient(transparent,rgba(0,0,0,.8));font-family:var(--mono);font-size:10px;display:flex;justify-content:space-between" id="camOverlay" style="display:none">
-          <span style="color:var(--green)" id="regSampleTxt">Preparing...</span>
-          <span style="color:var(--muted)">AXIOM SCAN</span>
+        <video id="scanVideo" style="display:none;width:100%;height:100%;object-fit:cover" autoplay muted></video>
+        <div class="scan-overlay">
+          <div class="scan-face-ring" id="scanFaceRing" style="display:none"></div>
+        </div>
+        <div class="scan-result-overlay" id="scanResultOverlay">
+          <div class="scan-result-icon" id="scanResultIcon">✅</div>
+          <div style="font-size:15px;font-weight:700" id="scanResultText">Verified!</div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:4px" id="scanResultSub">—
+          </div>
+        </div>
+        <div class="scan-status-bar" id="scanStatusBar">
+          <span style="color:var(--green)" id="scanStatusTxt">Initializing...</span>
+          <span style="color:var(--muted)" id="scanTimeTxt">—</span>
         </div>
       </div>
-      <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-family:var(--mono);font-size:9px;color:var(--muted)">
-        <span>CAPTURING SAMPLES</span>
-        <span id="regPct">0%</span>
-      </div>
-      <div class="prog-wrap"><div class="prog-fill" id="regProgBar" style="width:0%"></div></div>
-      <div style="font-family:var(--mono);font-size:9px;color:var(--muted);text-align:center;margin-top:6px" id="regHint">Position your face in the camera</div>
-      <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:12px" onclick="cancelReg()">Cancel</button>
-    </div>
 
-    <!-- Step 2: Success -->
-    <div id="wizStep2" style="display:none;text-align:center;padding:16px 0">
-      <div style="font-size:56px;margin-bottom:12px;animation:bounceIn .5s ease">✅</div>
-      <div style="font-size:17px;font-weight:700;color:var(--green);margin-bottom:6px">Face Registered!</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:20px">Your facial profile has been saved successfully.</div>
-      <div style="background:var(--glass3);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:20px;text-align:left" id="regRatioDisplay"></div>
-      <button class="btn btn-purple" style="width:100%;justify-content:center;padding:12px" onclick="closeWizard()">Go to Dashboard 🚀</button>
-    </div>
-  </div>
-</div>
+      <!-- late warning -->
+      <div id="lateWarning" style="display:none;margin-top:10px" class="alert-b warn">
+        <span style="font-size:18px">⏰</span>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--amber)">Late Entry Detected</div>
+          <div style="font-size:10px;color:var(--muted)" id="lateDetail">You are X minutes late. Attendance will be
+            marked as LATE.</div>
+        </div>
+      </div>
 
-<!-- ════════════════════════════════
-     FACE SCAN MODAL (attendance)
-════════════════════════════════ -->
-<div id="scanModal">
-  <div class="scan-card glass2">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <div>
-        <div style="font-size:15px;font-weight:700" id="scanModalTitle">Mark Attendance</div>
-        <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:2px" id="scanModalMeta">—</div>
+      <div style="display:flex;gap:10px;margin-top:14px">
+        <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="closeScanModal()">Cancel</button>
+        <button id="scanConfirmBtn" style="flex:2;display:none" class="btn btn-purple" onclick="confirmAttendance()"
+          style="justify-content:center">Confirm Attendance ✓</button>
       </div>
-      <button onclick="closeScanModal()" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px;border-radius:4px">✕</button>
-    </div>
-
-    <div class="scan-cam">
-      <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--muted);font-family:var(--mono);font-size:11px;min-height:200px;background:#050a10" id="scanPlaceholder">
-        <div style="font-size:36px;opacity:.3">📷</div><div>Starting camera...</div>
-      </div>
-      <video id="scanVideo" style="display:none;width:100%;height:100%;object-fit:cover" autoplay muted></video>
-      <div class="scan-overlay">
-        <div class="scan-face-ring" id="scanFaceRing" style="display:none"></div>
-      </div>
-      <div class="scan-result-overlay" id="scanResultOverlay">
-        <div class="scan-result-icon" id="scanResultIcon">✅</div>
-        <div style="font-size:15px;font-weight:700" id="scanResultText">Verified!</div>
-        <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:4px" id="scanResultSub">—</div>
-      </div>
-      <div class="scan-status-bar" id="scanStatusBar">
-        <span style="color:var(--green)" id="scanStatusTxt">Initializing...</span>
-        <span style="color:var(--muted)" id="scanTimeTxt">—</span>
-      </div>
-    </div>
-
-    <!-- late warning -->
-    <div id="lateWarning" style="display:none;margin-top:10px" class="alert-b warn">
-      <span style="font-size:18px">⏰</span>
-      <div>
-        <div style="font-size:12px;font-weight:700;color:var(--amber)">Late Entry Detected</div>
-        <div style="font-size:10px;color:var(--muted)" id="lateDetail">You are X minutes late. Attendance will be marked as LATE.</div>
-      </div>
-    </div>
-
-    <div style="display:flex;gap:10px;margin-top:14px">
-      <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="closeScanModal()">Cancel</button>
-      <button id="scanConfirmBtn" style="flex:2;display:none" class="btn btn-purple" onclick="confirmAttendance()" style="justify-content:center">Confirm Attendance ✓</button>
     </div>
   </div>
-</div>
 
-<!-- ════════════════════════════════
+  <!-- ════════════════════════════════
      MAIN APP
 ════════════════════════════════ -->
-<div id="appPage">
+  <div id="appPage">
 
-  <!-- Face not set up banner -->
-  <div class="face-setup-banner" id="faceSetupBanner" onclick="openWizard()" style="display:none">
-    <span style="font-size:24px">🤳</span>
-    <div style="flex:1">
-      <div style="font-size:13px;font-weight:700;color:var(--purple)">Set up Face Recognition</div>
-      <div style="font-size:11px;color:var(--muted);margin-top:2px">Register your face once to mark attendance using AXIOM. Click to start →</div>
-    </div>
-    <span style="color:var(--purple);font-size:18px">→</span>
-  </div>
-
-  <nav class="topnav">
-    <div class="nav-logo">AXIOM</div>
-    <div class="nav-tabs">
-      <button class="nav-tab active" onclick="showTab('dashboard',this)">⬛ Dashboard</button>
-      <button class="nav-tab" onclick="showTab('attendance',this)">◉ Attendance</button>
-      <button class="nav-tab" onclick="showTab('history',this)">📋 History</button>
-      <button class="nav-tab" onclick="showTab('alerts',this)">⚠️ Alerts</button>
-      <button class="nav-tab" onclick="showTab('profile',this)">👤 Profile</button>
-    </div>
-    <div class="nav-right">
-      <div class="stu-chip glass">
-        <div class="stu-avatar">🎓</div>
-        <span class="stu-name" id="chipName">—</span>
+    <!-- Face not set up banner -->
+    <div class="face-setup-banner" id="faceSetupBanner" onclick="openWizard()" style="display:none">
+      <span style="font-size:24px">🤳</span>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:700;color:var(--purple)">Set up Face Recognition</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">Register your face once to mark attendance using
+          AXIOM. Click to start →</div>
       </div>
-      <button class="logout-btn" onclick="doLogout()">Sign Out</button>
-    </div>
-  </nav>
-
-  <!-- ── DASHBOARD ── -->
-  <div class="section active" id="tab-dashboard">
-    <div class="welcome-wrap">
-      <div class="w-greet">Good <span id="timeGreet">morning</span> 👋</div>
-      <div class="w-name" id="wName">—</div>
-      <div class="w-meta">
-        <span>🎓 <span id="wBatch">—</span></span>
-        <span>📚 <span id="wSem">—</span></span>
-        <span>🆔 <span id="wId">—</span></span>
-        <span id="streakBadge"></span>
-      </div>
+      <span style="color:var(--purple);font-size:18px">→</span>
     </div>
 
-    <div id="dashAlerts"></div>
-
-    <div class="stats-grid" id="dashStats"></div>
-
-    <div style="font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">📚 Subject Overview</div>
-    <div class="subj-grid" id="subjGrid"></div>
-
-    <div class="two-col">
-      <div class="card glass">
-        <div class="card-hdr"><span class="card-ttl">📅 Today's Classes</span><span style="font-family:var(--mono);font-size:9px;color:var(--muted)" id="todayLbl"></span></div>
-        <div class="card-body" style="padding:10px 14px" id="todayClasses"></div>
+    <nav class="topnav">
+      <div class="nav-logo">AXIOM</div>
+      <div class="nav-tabs">
+        <button class="nav-tab active" onclick="showTab('dashboard',this)">⬛ Dashboard</button>
+        <button class="nav-tab" onclick="showTab('attendance',this)">◉ Attendance</button>
+        <button class="nav-tab" onclick="showTab('history',this)">📋 History</button>
+        <button class="nav-tab" onclick="showTab('alerts',this)">⚠️ Alerts</button>
+        <button class="nav-tab" onclick="showTab('profile',this)">👤 Profile</button>
       </div>
-      <div class="card glass">
-        <div class="card-hdr"><span class="card-ttl">🔥 Attendance Streak</span><span style="font-family:var(--mono);font-size:9px;color:var(--amber)" id="streakCount">0 days</span></div>
-        <div class="card-body" id="streakBody"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── ATTENDANCE ── -->
-  <div class="section" id="tab-attendance">
-    <div style="margin-bottom:18px">
-      <div style="font-size:19px;font-weight:700;margin-bottom:4px">📸 Mark Attendance</div>
-      <div style="font-size:12px;color:var(--muted)">Sessions opened by your teacher. Scan your face to mark present.</div>
-    </div>
-
-    <!-- Open sessions -->
-    <div id="openSessionBanner" style="display:none" class="alert-b info" style="margin-bottom:16px">
-      <span style="font-size:20px">🟢</span>
-      <div>
-        <div style="font-size:13px;font-weight:700;color:var(--blue)"><span id="openCount">0</span> session(s) are currently OPEN</div>
-        <div style="font-size:11px;color:var(--muted)">Mark your attendance before the session closes!</div>
-      </div>
-    </div>
-
-    <div style="font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Today's Sessions</div>
-    <div class="session-grid" id="sessionGrid"></div>
-
-    <div class="card glass" style="margin-top:6px">
-      <div class="card-hdr"><span class="card-ttl">📊 Today's Attendance Summary</span></div>
-      <div class="card-body">
-        <div class="three-col" id="todaySummary"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── HISTORY ── -->
-  <div class="section" id="tab-history">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
-      <div>
-        <div style="font-size:19px;font-weight:700;margin-bottom:4px">📋 Attendance History</div>
-        <div style="font-size:12px;color:var(--muted)">Per-lecture attendance with timing details</div>
-      </div>
-      <div style="display:flex;gap:8px">
-        <select id="histSubj" onchange="renderHistory()"
-          style="background:var(--glass);border:1px solid var(--border);border-radius:9px;padding:8px 12px;color:var(--text);font-size:11px;outline:none;cursor:pointer;font-family:var(--sans)">
-          <option value="">All Subjects</option>
-        </select>
-        <select id="histStatus" onchange="renderHistory()"
-          style="background:var(--glass);border:1px solid var(--border);border-radius:9px;padding:8px 12px;color:var(--text);font-size:11px;outline:none;cursor:pointer;font-family:var(--sans)">
-          <option value="">All</option>
-          <option value="PRESENT">Present</option>
-          <option value="LATE">Late</option>
-          <option value="ABSENT">Absent</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="card glass" style="overflow:hidden">
-      <div class="lec-table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>#</th><th>Subject</th><th>Date</th>
-              <th>Lecture Time</th><th>Marked At</th>
-              <th>Late By</th><th>Status</th><th>Match %</th>
-            </tr>
-          </thead>
-          <tbody id="histTable"></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── ALERTS ── -->
-  <div class="section" id="tab-alerts">
-    <div style="font-size:19px;font-weight:700;margin-bottom:4px">⚠️ Attendance Alerts</div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:18px">Subjects needing your attention</div>
-    <div class="three-col" style="margin-bottom:18px" id="alertStats"></div>
-    <div class="two-col">
-      <div id="shortageCards"></div>
-      <div style="display:flex;flex-direction:column;gap:14px">
-        <div class="card glass" style="padding:20px;text-align:center">
-          <div style="font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Overall Attendance</div>
-          <div style="font-size:52px;font-weight:800;line-height:1;margin-bottom:6px" id="overallNum">—</div>
-          <div style="font-size:12px;color:var(--muted)" id="overallMsg">—</div>
-          <div style="height:6px;background:rgba(255,255,255,.07);border-radius:6px;overflow:hidden;margin-top:14px">
-            <div id="overallBar" style="height:100%;border-radius:6px;transition:width 1s ease;width:0%"></div>
-          </div>
+      <div class="nav-right">
+        <div class="stu-chip glass">
+          <div class="stu-avatar">🎓</div>
+          <span class="stu-name" id="chipName">—</span>
         </div>
-        <div class="card glass" style="padding:16px">
-          <div style="font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Lectures Needed (to reach 75%)</div>
-          <div id="lecNeeded"></div>
+        <button class="logout-btn" onclick="doLogout()">Sign Out</button>
+      </div>
+    </nav>
+
+    <!-- ── DASHBOARD ── -->
+    <div class="section active" id="tab-dashboard">
+      <div class="welcome-wrap">
+        <div class="w-greet">Good <span id="timeGreet">morning</span> 👋</div>
+        <div class="w-name" id="wName">—</div>
+        <div class="w-meta">
+          <span>🎓 <span id="wBatch">—</span></span>
+          <span>📚 <span id="wSem">—</span></span>
+          <span>🆔 <span id="wId">—</span></span>
+          <span id="streakBadge"></span>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- ── PROFILE ── -->
-  <div class="section" id="tab-profile">
-    <div class="two-col">
-      <div>
-        <div class="prof-hero">
-          <div class="prof-av">🎓</div>
-          <div class="prof-name" id="profName">—</div>
-          <div class="prof-id" id="profId">—</div>
-          <div style="display:flex;gap:7px;justify-content:center;margin-top:10px;flex-wrap:wrap" id="profChips"></div>
-        </div>
-        <div class="card glass" style="padding:16px" id="faceRegStatus"></div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:14px">
+      <div id="dashAlerts"></div>
+
+      <div class="stats-grid" id="dashStats"></div>
+
+      <div
+        style="font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">
+        📚 Subject Overview</div>
+      <div class="subj-grid" id="subjGrid"></div>
+
+      <div class="two-col">
         <div class="card glass">
-          <div class="card-hdr"><span class="card-ttl">Per-Subject Attendance</span></div>
-          <div class="card-body" id="profAttList"></div>
+          <div class="card-hdr"><span class="card-ttl">📅 Today's Classes</span><span
+              style="font-family:var(--mono);font-size:9px;color:var(--muted)" id="todayLbl"></span></div>
+          <div class="card-body" style="padding:10px 14px" id="todayClasses"></div>
         </div>
-        <div class="card glass" style="padding:16px">
-          <div style="font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">📥 Report Download</div>
-          <div style="font-size:12px;color:var(--muted);line-height:1.6">
-            Attendance reports can only be downloaded by your <strong style="color:var(--text)">teacher or admin</strong>.<br><br>
-            Contact your teacher for an official attendance certificate or report.
+        <div class="card glass">
+          <div class="card-hdr"><span class="card-ttl">🔥 Attendance Streak</span><span
+              style="font-family:var(--mono);font-size:9px;color:var(--amber)" id="streakCount">0 days</span></div>
+          <div class="card-body" id="streakBody"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ATTENDANCE ── -->
+    <div class="section" id="tab-attendance">
+      <div style="margin-bottom:18px">
+        <div style="font-size:19px;font-weight:700;margin-bottom:4px">📸 Mark Attendance</div>
+        <div style="font-size:12px;color:var(--muted)">Sessions opened by your teacher. Scan your face to mark present.
+        </div>
+      </div>
+
+      <!-- Open sessions -->
+      <div id="openSessionBanner" style="display:none" class="alert-b info" style="margin-bottom:16px">
+        <span style="font-size:20px">🟢</span>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--blue)"><span id="openCount">0</span> session(s) are
+            currently OPEN</div>
+          <div style="font-size:11px;color:var(--muted)">Mark your attendance before the session closes!</div>
+        </div>
+      </div>
+
+      <div
+        style="font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">
+        Today's Sessions</div>
+      <div class="session-grid" id="sessionGrid"></div>
+
+      <div class="card glass" style="margin-top:6px">
+        <div class="card-hdr"><span class="card-ttl">📊 Today's Attendance Summary</span></div>
+        <div class="card-body">
+          <div class="three-col" id="todaySummary"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── HISTORY ── -->
+    <div class="section" id="tab-history">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+        <div>
+          <div style="font-size:19px;font-weight:700;margin-bottom:4px">📋 Attendance History</div>
+          <div style="font-size:12px;color:var(--muted)">Per-lecture attendance with timing details</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <select id="histSubj" onchange="renderHistory()"
+            style="background:var(--glass);border:1px solid var(--border);border-radius:9px;padding:8px 12px;color:var(--text);font-size:11px;outline:none;cursor:pointer;font-family:var(--sans)">
+            <option value="">All Subjects</option>
+          </select>
+          <select id="histStatus" onchange="renderHistory()"
+            style="background:var(--glass);border:1px solid var(--border);border-radius:9px;padding:8px 12px;color:var(--text);font-size:11px;outline:none;cursor:pointer;font-family:var(--sans)">
+            <option value="">All</option>
+            <option value="PRESENT">Present</option>
+            <option value="LATE">Late</option>
+            <option value="ABSENT">Absent</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card glass" style="overflow:hidden">
+        <div class="lec-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Subject</th>
+                <th>Date</th>
+                <th>Lecture Time</th>
+                <th>Marked At</th>
+                <th>Late By</th>
+                <th>Status</th>
+                <th>Match %</th>
+              </tr>
+            </thead>
+            <tbody id="histTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ALERTS ── -->
+    <div class="section" id="tab-alerts">
+      <div style="font-size:19px;font-weight:700;margin-bottom:4px">⚠️ Attendance Alerts</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:18px">Subjects needing your attention</div>
+      <div class="three-col" style="margin-bottom:18px" id="alertStats"></div>
+      <div class="two-col">
+        <div id="shortageCards"></div>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div class="card glass" style="padding:20px;text-align:center">
+            <div
+              style="font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">
+              Overall Attendance</div>
+            <div style="font-size:52px;font-weight:800;line-height:1;margin-bottom:6px" id="overallNum">—</div>
+            <div style="font-size:12px;color:var(--muted)" id="overallMsg">—</div>
+            <div style="height:6px;background:rgba(255,255,255,.07);border-radius:6px;overflow:hidden;margin-top:14px">
+              <div id="overallBar" style="height:100%;border-radius:6px;transition:width 1s ease;width:0%"></div>
+            </div>
+          </div>
+          <div class="card glass" style="padding:16px">
+            <div
+              style="font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px">
+              Lectures Needed (to reach 75%)</div>
+            <div id="lecNeeded"></div>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- ── PROFILE ── -->
+    <div class="section" id="tab-profile">
+      <div class="two-col">
+        <div>
+          <div class="prof-hero">
+            <div class="prof-av">🎓</div>
+            <div class="prof-name" id="profName">—</div>
+            <div class="prof-id" id="profId">—</div>
+            <div style="display:flex;gap:7px;justify-content:center;margin-top:10px;flex-wrap:wrap" id="profChips">
+            </div>
+          </div>
+          <div class="card glass" style="padding:16px" id="faceRegStatus"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div class="card glass">
+            <div class="card-hdr"><span class="card-ttl">Per-Subject Attendance</span></div>
+            <div class="card-body" id="profAttList"></div>
+          </div>
+          <div class="card glass" style="padding:16px">
+            <div
+              style="font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">
+              📥 Report Download</div>
+            <div style="font-size:12px;color:var(--muted);line-height:1.6">
+              Attendance reports can only be downloaded by your <strong style="color:var(--text)">teacher or
+                admin</strong>.<br><br>
+              Contact your teacher for an official attendance certificate or report.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
-</div>
+  <script>
+    // ══════════════════════════════════════════
+    // DATA
+    // ══════════════════════════════════════════
+    const STUDENTS = {
+      'CS2024101': {
+        password: 'axiom123', name: 'Rahul Sharma', id: 'CS2024101',
+        batch: 'CS-2024-A', sem: '3rd Year · Sem 5', dept: 'Computer Science',
+        faceRegistered: false,
+        subjects: [
+          { id: 's1', name: 'Data Structures', code: 'CS301', color: '#a29bfe', icon: '🧮', present: 18, total: 22, lateCount: 2 },
+          { id: 's2', name: 'Computer Networks', code: 'CS401', color: '#74b9ff', icon: '🌐', present: 14, total: 20, lateCount: 3 },
+          { id: 's3', name: 'Operating Systems', code: 'CS302', color: '#fd79a8', icon: '💻', present: 12, total: 18, lateCount: 1 },
+          { id: 's4', name: 'Python Programming', code: 'IT201', color: '#00b894', icon: '🐍', present: 19, total: 20, lateCount: 0 },
+        ],
+        history: [
+          { subj: 'Data Structures', code: 'CS301', date: '2025-07-14', lecTime: '09:00', markedAt: '09:04', lateBy: 4, status: 'LATE', score: '94.2%' },
+          { subj: 'Computer Networks', code: 'CS401', date: '2025-07-14', lecTime: '10:00', markedAt: '10:01', lateBy: 1, status: 'PRESENT', score: '91.5%' },
+          { subj: 'Operating Systems', code: 'CS302', date: '2025-07-14', lecTime: '11:00', markedAt: '—', lateBy: 0, status: 'ABSENT', score: '—' },
+          { subj: 'Python Programming', code: 'IT201', date: '2025-07-13', lecTime: '13:00', markedAt: '13:00', lateBy: 0, status: 'PRESENT', score: '96.1%' },
+          { subj: 'Data Structures', code: 'CS301', date: '2025-07-13', lecTime: '09:00', markedAt: '09:12', lateBy: 12, status: 'LATE', score: '92.8%' },
+          { subj: 'Computer Networks', code: 'CS401', date: '2025-07-12', lecTime: '10:00', markedAt: '—', lateBy: 0, status: 'ABSENT', score: '—' },
+          { subj: 'Operating Systems', code: 'CS302', date: '2025-07-12', lecTime: '11:00', markedAt: '—', lateBy: 0, status: 'ABSENT', score: '—' },
+          { subj: 'Python Programming', code: 'IT201', date: '2025-07-11', lecTime: '13:00', markedAt: '13:00', lateBy: 0, status: 'PRESENT', score: '89.3%' },
+          { subj: 'Data Structures', code: 'CS301', date: '2025-07-11', lecTime: '09:00', markedAt: '09:00', lateBy: 0, status: 'PRESENT', score: '93.5%' },
+          { subj: 'Computer Networks', code: 'CS401', date: '2025-07-10', lecTime: '10:00', markedAt: '10:00', lateBy: 0, status: 'PRESENT', score: '90.1%' },
+        ],
+        streak: [true, true, false, true, true, true, false, true, true, true, true, false, true, true],
+        sessions: [
+          {
+            id: 'sess1', subjId: 's1', subjName: 'Data Structures', code: 'CS301', color: '#a29bfe', icon: '🧮',
+            lecTime: '09:00', endTime: '10:00', lateAfter: '09:10', room: 'Room 301',
+            status: 'open', markedAt: null, markedStatus: null
+          },
+          {
+            id: 'sess2', subjId: 's2', subjName: 'Computer Networks', code: 'CS401', color: '#74b9ff', icon: '🌐',
+            lecTime: '10:00', endTime: '11:00', lateAfter: '10:10', room: 'Lab 2',
+            status: 'open', markedAt: null, markedStatus: null
+          },
+          {
+            id: 'sess3', subjId: 's3', subjName: 'Operating Systems', code: 'CS302', color: '#fd79a8', icon: '💻',
+            lecTime: '11:00', endTime: '12:00', lateAfter: '11:10', room: 'Room 201',
+            status: 'closed', markedAt: null, markedStatus: null
+          },
+          {
+            id: 'sess4', subjId: 's4', subjName: 'Python Programming', code: 'IT201', color: '#00b894', icon: '🐍',
+            lecTime: '13:00', endTime: '14:00', lateAfter: '13:10', room: 'Lab 1',
+            status: 'upcoming', markedAt: null, markedStatus: null
+          },
+        ],
+        schedule: {
+          Monday: [{ subj: 'Data Structures', code: 'CS301', color: '#a29bfe', start: '09:00', end: '10:00', room: 'Room 301' },
+          { subj: 'Operating Systems', code: 'CS302', color: '#fd79a8', start: '11:00', end: '12:00', room: 'Room 201' }],
+          Tuesday: [{ subj: 'Computer Networks', code: 'CS401', color: '#74b9ff', start: '10:00', end: '11:00', room: 'Lab 2' }],
+          Wednesday: [{ subj: 'Python Programming', code: 'IT201', color: '#00b894', start: '13:00', end: '14:00', room: 'Lab 1' }],
+          Thursday: [{ subj: 'Data Structures', code: 'CS301', color: '#a29bfe', start: '09:00', end: '10:00', room: 'Room 301' },
+          { subj: 'Computer Networks', code: 'CS401', color: '#74b9ff', start: '14:00', end: '15:00', room: 'Lab 2' }],
+          Friday: [{ subj: 'Operating Systems', code: 'CS302', color: '#fd79a8', start: '11:00', end: '12:00', room: 'Room 201' },
+          { subj: 'Python Programming', code: 'IT201', color: '#00b894', start: '15:00', end: '16:00', room: 'Lab 1' }],
+        }
+      }
+    };
 
-<script>
-// ══════════════════════════════════════════
-// DATA
-// ══════════════════════════════════════════
-const STUDENTS = {
-  'CS2024101': {
-    password:'axiom123', name:'Rahul Sharma', id:'CS2024101',
-    batch:'CS-2024-A', sem:'3rd Year · Sem 5', dept:'Computer Science',
-    faceRegistered: false,
-    subjects:[
-      {id:'s1',name:'Data Structures',   code:'CS301',color:'#a29bfe',icon:'🧮',present:18,total:22,lateCount:2},
-      {id:'s2',name:'Computer Networks', code:'CS401',color:'#74b9ff',icon:'🌐',present:14,total:20,lateCount:3},
-      {id:'s3',name:'Operating Systems', code:'CS302',color:'#fd79a8',icon:'💻',present:12,total:18,lateCount:1},
-      {id:'s4',name:'Python Programming',code:'IT201',color:'#00b894',icon:'🐍',present:19,total:20,lateCount:0},
-    ],
-    history:[
-      {subj:'Data Structures',   code:'CS301',date:'2025-07-14',lecTime:'09:00',markedAt:'09:04',lateBy:4, status:'LATE',   score:'94.2%'},
-      {subj:'Computer Networks', code:'CS401',date:'2025-07-14',lecTime:'10:00',markedAt:'10:01',lateBy:1, status:'PRESENT',score:'91.5%'},
-      {subj:'Operating Systems', code:'CS302',date:'2025-07-14',lecTime:'11:00',markedAt:'—',    lateBy:0, status:'ABSENT', score:'—'},
-      {subj:'Python Programming',code:'IT201',date:'2025-07-13',lecTime:'13:00',markedAt:'13:00',lateBy:0, status:'PRESENT',score:'96.1%'},
-      {subj:'Data Structures',   code:'CS301',date:'2025-07-13',lecTime:'09:00',markedAt:'09:12',lateBy:12,status:'LATE',   score:'92.8%'},
-      {subj:'Computer Networks', code:'CS401',date:'2025-07-12',lecTime:'10:00',markedAt:'—',    lateBy:0, status:'ABSENT', score:'—'},
-      {subj:'Operating Systems', code:'CS302',date:'2025-07-12',lecTime:'11:00',markedAt:'—',    lateBy:0, status:'ABSENT', score:'—'},
-      {subj:'Python Programming',code:'IT201',date:'2025-07-11',lecTime:'13:00',markedAt:'13:00',lateBy:0, status:'PRESENT',score:'89.3%'},
-      {subj:'Data Structures',   code:'CS301',date:'2025-07-11',lecTime:'09:00',markedAt:'09:00',lateBy:0, status:'PRESENT',score:'93.5%'},
-      {subj:'Computer Networks', code:'CS401',date:'2025-07-10',lecTime:'10:00',markedAt:'10:00',lateBy:0, status:'PRESENT',score:'90.1%'},
-    ],
-    streak:[true,true,false,true,true,true,false,true,true,true,true,false,true,true],
-    sessions:[
-      {id:'sess1',subjId:'s1',subjName:'Data Structures',   code:'CS301',color:'#a29bfe',icon:'🧮',
-       lecTime:'09:00',endTime:'10:00',lateAfter:'09:10',room:'Room 301',
-       status:'open',  markedAt:null,markedStatus:null},
-      {id:'sess2',subjId:'s2',subjName:'Computer Networks', code:'CS401',color:'#74b9ff',icon:'🌐',
-       lecTime:'10:00',endTime:'11:00',lateAfter:'10:10',room:'Lab 2',
-       status:'open',  markedAt:null,markedStatus:null},
-      {id:'sess3',subjId:'s3',subjName:'Operating Systems', code:'CS302',color:'#fd79a8',icon:'💻',
-       lecTime:'11:00',endTime:'12:00',lateAfter:'11:10',room:'Room 201',
-       status:'closed',markedAt:null,markedStatus:null},
-      {id:'sess4',subjId:'s4',subjName:'Python Programming',code:'IT201',color:'#00b894',icon:'🐍',
-       lecTime:'13:00',endTime:'14:00',lateAfter:'13:10',room:'Lab 1',
-       status:'upcoming',markedAt:null,markedStatus:null},
-    ],
-    schedule:{
-      Monday:[   {subj:'Data Structures',   code:'CS301',color:'#a29bfe',start:'09:00',end:'10:00',room:'Room 301'},
-                 {subj:'Operating Systems', code:'CS302',color:'#fd79a8',start:'11:00',end:'12:00',room:'Room 201'}],
-      Tuesday:[  {subj:'Computer Networks', code:'CS401',color:'#74b9ff',start:'10:00',end:'11:00',room:'Lab 2'}],
-      Wednesday:[{subj:'Python Programming',code:'IT201',color:'#00b894',start:'13:00',end:'14:00',room:'Lab 1'}],
-      Thursday:[ {subj:'Data Structures',   code:'CS301',color:'#a29bfe',start:'09:00',end:'10:00',room:'Room 301'},
-                 {subj:'Computer Networks', code:'CS401',color:'#74b9ff',start:'14:00',end:'15:00',room:'Lab 2'}],
-      Friday:[   {subj:'Operating Systems', code:'CS302',color:'#fd79a8',start:'11:00',end:'12:00',room:'Room 201'},
-                 {subj:'Python Programming',code:'IT201',color:'#00b894',start:'15:00',end:'16:00',room:'Lab 1'}],
+    let CS = null; // current student
+    let scanSession = null; // session being scanned
+    let regStream = null, scanStream = null;
+    let regInterval = null, scanInterval = null;
+    let regSamples = 0;
+    let scanVerified = false;
+
+    // ══════════════════════════════════════════
+    // LOGIN / LOGOUT
+    // ══════════════════════════════════════════
+    function doLogin() {
+      const id = document.getElementById('loginId').value.trim();
+      const pw = document.getElementById('loginPass').value.trim();
+      const err = document.getElementById('loginErr');
+      const stu = STUDENTS[id];
+      if (!stu || stu.password !== pw) { err.style.display = 'block'; return; }
+      err.style.display = 'none';
+      CS = stu;
+      document.getElementById('loginPage').style.transition = 'opacity .4s';
+      document.getElementById('loginPage').style.opacity = '0';
+      setTimeout(() => document.getElementById('loginPage').style.display = 'none', 400);
+      document.getElementById('appPage').style.display = 'block';
+      initApp();
     }
-  }
-};
 
-let CS = null; // current student
-let scanSession = null; // session being scanned
-let regStream = null, scanStream = null;
-let regInterval = null, scanInterval = null;
-let regSamples = 0;
-let scanVerified = false;
+    document.getElementById('loginId').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('loginPass').focus(); });
+    document.getElementById('loginPass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 
-// ══════════════════════════════════════════
-// LOGIN / LOGOUT
-// ══════════════════════════════════════════
-function doLogin(){
-  const id=document.getElementById('loginId').value.trim();
-  const pw=document.getElementById('loginPass').value.trim();
-  const err=document.getElementById('loginErr');
-  const stu=STUDENTS[id];
-  if(!stu||stu.password!==pw){ err.style.display='block'; return; }
-  err.style.display='none';
-  CS=stu;
-  document.getElementById('loginPage').style.transition='opacity .4s';
-  document.getElementById('loginPage').style.opacity='0';
-  setTimeout(()=>document.getElementById('loginPage').style.display='none',400);
-  document.getElementById('appPage').style.display='block';
-  initApp();
-}
+    function doLogout() {
+      CS = null; scanSession = null;
+      stopAllStreams();
+      document.getElementById('appPage').style.display = 'none';
+      document.getElementById('loginPage').style.display = 'flex';
+      document.getElementById('loginPage').style.opacity = '1';
+      document.getElementById('loginId').value = '';
+      document.getElementById('loginPass').value = '';
+    }
 
-document.getElementById('loginId').addEventListener('keydown',e=>{ if(e.key==='Enter') document.getElementById('loginPass').focus(); });
-document.getElementById('loginPass').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
+    // ══════════════════════════════════════════
+    // INIT
+    // ══════════════════════════════════════════
+    function initApp() {
+      const h = new Date().getHours();
+      document.getElementById('timeGreet').textContent = h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening';
+      document.getElementById('chipName').textContent = CS.name.split(' ')[0];
+      document.getElementById('wName').textContent = CS.name;
+      document.getElementById('wBatch').textContent = CS.batch;
+      document.getElementById('wSem').textContent = CS.sem;
+      document.getElementById('wId').textContent = CS.id;
 
-function doLogout(){
-  CS=null; scanSession=null;
-  stopAllStreams();
-  document.getElementById('appPage').style.display='none';
-  document.getElementById('loginPage').style.display='flex';
-  document.getElementById('loginPage').style.opacity='1';
-  document.getElementById('loginId').value='';
-  document.getElementById('loginPass').value='';
-}
+      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      document.getElementById('todayLbl').textContent = days[new Date().getDay()];
 
-// ══════════════════════════════════════════
-// INIT
-// ══════════════════════════════════════════
-function initApp(){
-  const h=new Date().getHours();
-  document.getElementById('timeGreet').textContent=h<12?'morning':h<17?'afternoon':'evening';
-  document.getElementById('chipName').textContent=CS.name.split(' ')[0];
-  document.getElementById('wName').textContent=CS.name;
-  document.getElementById('wBatch').textContent=CS.batch;
-  document.getElementById('wSem').textContent=CS.sem;
-  document.getElementById('wId').textContent=CS.id;
+      // streak badge
+      const streak = calcStreak();
+      document.getElementById('streakBadge').innerHTML = streak > 0 ? `🔥 ${streak}-day streak` : '';
 
-  const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  document.getElementById('todayLbl').textContent=days[new Date().getDay()];
+      // face setup banner
+      if (!CS.faceRegistered) {
+        document.getElementById('faceSetupBanner').style.display = 'flex';
+      }
 
-  // streak badge
-  const streak=calcStreak();
-  document.getElementById('streakBadge').innerHTML=streak>0?`🔥 ${streak}-day streak`:'';
+      renderDashboard();
+      populateHistFilters();
+    }
 
-  // face setup banner
-  if(!CS.faceRegistered){
-    document.getElementById('faceSetupBanner').style.display='flex';
-  }
+    function calcStreak() {
+      let s = 0;
+      for (let i = CS.streak.length - 1; i >= 0; i--) {
+        if (CS.streak[i]) s++; else break;
+      }
+      return s;
+    }
 
-  renderDashboard();
-  populateHistFilters();
-}
+    // ══════════════════════════════════════════
+    // NAVIGATION
+    // ══════════════════════════════════════════
+    function showTab(id, btn) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('tab-' + id).classList.add('active');
+      btn.classList.add('active');
+      const r = { dashboard: renderDashboard, attendance: renderAttendance, history: renderHistory, alerts: renderAlerts, profile: renderProfile };
+      r[id]?.();
+    }
 
-function calcStreak(){
-  let s=0;
-  for(let i=CS.streak.length-1;i>=0;i--){
-    if(CS.streak[i]) s++; else break;
-  }
-  return s;
-}
+    // ══════════════════════════════════════════
+    // DASHBOARD
+    // ══════════════════════════════════════════
+    function pct(s) { return s.total > 0 ? Math.round(s.present / s.total * 100) : 0; }
 
-// ══════════════════════════════════════════
-// NAVIGATION
-// ══════════════════════════════════════════
-function showTab(id,btn){
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('tab-'+id).classList.add('active');
-  btn.classList.add('active');
-  const r={dashboard:renderDashboard,attendance:renderAttendance,history:renderHistory,alerts:renderAlerts,profile:renderProfile};
-  r[id]?.();
-}
+    function renderDashboard() {
+      // alerts
+      const low = CS.subjects.filter(s => pct(s) < 75);
+      const crit = CS.subjects.filter(s => pct(s) < 60);
+      let aHtml = '';
+      if (crit.length) aHtml += `<div class="alert-b danger" style="margin-bottom:10px"><span style="font-size:20px">🚨</span><div><div style="font-size:13px;font-weight:700;color:var(--red)">Critical Attendance!</div><div style="font-size:11px;color:var(--muted)">${crit.map(s => s.name).join(', ')} below 60%</div></div></div>`;
+      else if (low.length) aHtml += `<div class="alert-b warn" style="margin-bottom:10px"><span style="font-size:20px">⚠️</span><div><div style="font-size:13px;font-weight:700;color:var(--amber)">Low Attendance Warning</div><div style="font-size:11px;color:var(--muted)">${low.map(s => s.name).join(', ')} below 75%</div></div></div>`;
+      document.getElementById('dashAlerts').innerHTML = aHtml;
 
-// ══════════════════════════════════════════
-// DASHBOARD
-// ══════════════════════════════════════════
-function pct(s){ return s.total>0?Math.round(s.present/s.total*100):0; }
+      // stats
+      const totP = CS.subjects.reduce((a, s) => a + s.present, 0);
+      const totT = CS.subjects.reduce((a, s) => a + s.total, 0);
+      const ov = totT ? Math.round(totP / totT * 100) : 0;
+      const late = CS.subjects.reduce((a, s) => a + (s.lateCount || 0), 0);
+      const safe = CS.subjects.filter(s => pct(s) >= 75).length;
+      document.getElementById('dashStats').innerHTML = [
+        { n: ov + '%', l: 'Overall', c: '#a29bfe' },
+        { n: totP, l: 'Attended', c: '#00f5a0' },
+        { n: totT - totP, l: 'Missed', c: '#ff6b8a' },
+        { n: late, l: 'Late Entries', c: '#ffd166' },
+      ].map(d => `<div class="stat-g glass"><div class="stat-num" style="color:${d.c}">${d.n}</div><div class="stat-lbl">${d.l}</div></div>`).join('');
 
-function renderDashboard(){
-  // alerts
-  const low=CS.subjects.filter(s=>pct(s)<75);
-  const crit=CS.subjects.filter(s=>pct(s)<60);
-  let aHtml='';
-  if(crit.length) aHtml+=`<div class="alert-b danger" style="margin-bottom:10px"><span style="font-size:20px">🚨</span><div><div style="font-size:13px;font-weight:700;color:var(--red)">Critical Attendance!</div><div style="font-size:11px;color:var(--muted)">${crit.map(s=>s.name).join(', ')} below 60%</div></div></div>`;
-  else if(low.length) aHtml+=`<div class="alert-b warn" style="margin-bottom:10px"><span style="font-size:20px">⚠️</span><div><div style="font-size:13px;font-weight:700;color:var(--amber)">Low Attendance Warning</div><div style="font-size:11px;color:var(--muted)">${low.map(s=>s.name).join(', ')} below 75%</div></div></div>`;
-  document.getElementById('dashAlerts').innerHTML=aHtml;
-
-  // stats
-  const totP=CS.subjects.reduce((a,s)=>a+s.present,0);
-  const totT=CS.subjects.reduce((a,s)=>a+s.total,0);
-  const ov=totT?Math.round(totP/totT*100):0;
-  const late=CS.subjects.reduce((a,s)=>a+(s.lateCount||0),0);
-  const safe=CS.subjects.filter(s=>pct(s)>=75).length;
-  document.getElementById('dashStats').innerHTML=[
-    {n:ov+'%', l:'Overall',    c:'#a29bfe'},
-    {n:totP,   l:'Attended',   c:'#00f5a0'},
-    {n:totT-totP,l:'Missed',   c:'#ff6b8a'},
-    {n:late,   l:'Late Entries',c:'#ffd166'},
-  ].map(d=>`<div class="stat-g glass"><div class="stat-num" style="color:${d.c}">${d.n}</div><div class="stat-lbl">${d.l}</div></div>`).join('');
-
-  // subject cards
-  document.getElementById('subjGrid').innerHTML=CS.subjects.map(s=>{
-    const p=pct(s);
-    const col=p>=75?s.color:p>=60?'#ffd166':'#ff6b8a';
-    return `<div class="subj-card glass">
+      // subject cards
+      document.getElementById('subjGrid').innerHTML = CS.subjects.map(s => {
+        const p = pct(s);
+        const col = p >= 75 ? s.color : p >= 60 ? '#ffd166' : '#ff6b8a';
+        return `<div class="subj-card glass">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px">
         <div style="width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:19px;background:rgba(255,255,255,.08)">${s.icon}</div>
         <span style="background:${col}18;color:${col};border:1px solid ${col}33;font-family:var(--mono);font-size:10px;padding:3px 9px;border-radius:20px;font-weight:700">${p}%</span>
@@ -818,41 +1930,41 @@ function renderDashboard(){
       <div style="font-size:14px;font-weight:700;margin-bottom:2px">${s.name}</div>
       <div style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-bottom:12px">${s.code} · ${s.lateCount} late</div>
       <div style="display:flex;align-items:center;gap:12px">
-        <div class="circ-prog" style="background:conic-gradient(${col} 0deg,${col} ${p*3.6}deg,rgba(255,255,255,.06) ${p*3.6}deg)">
+        <div class="circ-prog" style="background:conic-gradient(${col} 0deg,${col} ${p * 3.6}deg,rgba(255,255,255,.06) ${p * 3.6}deg)">
           <div class="circ-inner"></div>
           <span class="circ-val" style="color:${col}">${p}%</span>
         </div>
         <div style="flex:1">
           <div style="font-size:10px;color:var(--muted);margin-bottom:2px">✅ Present: <strong style="color:var(--text)">${s.present}</strong></div>
-          <div style="font-size:10px;color:var(--muted);margin-bottom:2px">❌ Absent: <strong style="color:var(--red)">${s.total-s.present}</strong></div>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:2px">❌ Absent: <strong style="color:var(--red)">${s.total - s.present}</strong></div>
           <div style="font-size:10px;color:var(--muted)">⏰ Late: <strong style="color:var(--amber)">${s.lateCount}</strong></div>
         </div>
       </div>
       <div class="mini-bar"><div class="mini-fill" style="width:${p}%;background:${col}"></div></div>
-      ${p<75?`<div style="display:flex;align-items:center;gap:5px;background:rgba(255,107,138,.08);border:1px solid rgba(255,107,138,.15);border-radius:6px;padding:5px 9px;margin-top:8px;font-family:var(--mono);font-size:9px;color:var(--red)">⚠ Need ${Math.ceil((0.75*s.total-s.present)/(1-0.75))} more lectures</div>`:''}
+      ${p < 75 ? `<div style="display:flex;align-items:center;gap:5px;background:rgba(255,107,138,.08);border:1px solid rgba(255,107,138,.15);border-radius:6px;padding:5px 9px;margin-top:8px;font-family:var(--mono);font-size:9px;color:var(--red)">⚠ Need ${Math.ceil((0.75 * s.total - s.present) / (1 - 0.75))} more lectures</div>` : ''}
     </div>`;
-  }).join('');
+      }).join('');
 
-  // today's classes
-  const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const today=days[new Date().getDay()];
-  const todayL=CS.schedule[today]||[];
-  const tcEl=document.getElementById('todayClasses');
-  tcEl.innerHTML=todayL.length?todayL.map(l=>`
+      // today's classes
+      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const today = days[new Date().getDay()];
+      const todayL = CS.schedule[today] || [];
+      const tcEl = document.getElementById('todayClasses');
+      tcEl.innerHTML = todayL.length ? todayL.map(l => `
     <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;margin-bottom:8px;background:var(--glass3);border:1px solid ${l.color}22;transition:all .2s" onmouseover="this.style.borderColor='${l.color}55'" onmouseout="this.style.borderColor='${l.color}22'">
       <div style="width:4px;height:36px;border-radius:4px;background:${l.color};flex-shrink:0"></div>
       <div style="font-family:var(--mono);font-size:10px;color:var(--muted);min-width:80px">${l.start}–${l.end}</div>
       <div style="flex:1"><div style="font-size:12px;font-weight:700">${l.subj}</div><div style="font-size:10px;color:var(--muted)">📍 ${l.room}</div></div>
     </div>`).join('')
-    :`<div style="text-align:center;color:var(--muted);padding:22px;font-family:var(--mono);font-size:10px">🎉 No classes today!</div>`;
+        : `<div style="text-align:center;color:var(--muted);padding:22px;font-family:var(--mono);font-size:10px">🎉 No classes today!</div>`;
 
-  // streak
-  const streak=calcStreak();
-  document.getElementById('streakCount').textContent=streak+' days';
-  const sEl=document.getElementById('streakBody');
-  sEl.innerHTML=`<div style="padding:4px 16px 14px">
+      // streak
+      const streak = calcStreak();
+      document.getElementById('streakCount').textContent = streak + ' days';
+      const sEl = document.getElementById('streakBody');
+      sEl.innerHTML = `<div style="padding:4px 16px 14px">
     <div style="font-size:11px;color:var(--muted);margin-bottom:10px">Last ${CS.streak.length} days (🟩 present · 🟥 absent)</div>
-    <div class="streak-row">${CS.streak.map(d=>`<div class="streak-dot ${d?'p':'a'}" title="${d?'Present':'Absent'}"></div>`).join('')}</div>
+    <div class="streak-row">${CS.streak.map(d => `<div class="streak-dot ${d ? 'p' : 'a'}" title="${d ? 'Present' : 'Absent'}"></div>`).join('')}</div>
     <div style="margin-top:14px;display:flex;gap:12px">
       <div style="text-align:center;flex:1;background:var(--glass3);border:1px solid var(--border);border-radius:10px;padding:12px">
         <div style="font-size:22px;font-weight:800;color:var(--amber)">${streak}🔥</div>
@@ -864,45 +1976,45 @@ function renderDashboard(){
       </div>
     </div>
   </div>`;
-}
-
-// ══════════════════════════════════════════
-// ATTENDANCE SESSION
-// ══════════════════════════════════════════
-function renderAttendance(){
-  const open=CS.sessions.filter(s=>s.status==='open');
-  const ob=document.getElementById('openSessionBanner');
-  if(open.length>0){
-    ob.style.display='flex';
-    document.getElementById('openCount').textContent=open.length;
-  } else ob.style.display='none';
-
-  document.getElementById('sessionGrid').innerHTML=CS.sessions.map(sess=>{
-    const isOpen=sess.status==='open';
-    const isMarked=sess.markedAt!==null;
-    const isClosed=sess.status==='closed';
-    const isUpcoming=sess.status==='upcoming';
-    const isLate=sess.markedStatus==='LATE';
-
-    let cardCls=isMarked?'marked-session':isOpen?'open-session':'closed-session';
-    let pillHtml='';
-    if(isMarked)  pillHtml=`<span class="sess-status-pill ${isLate?'late':'marked'}">${isLate?'⏰ LATE':'✅ MARKED'}</span>`;
-    else if(isOpen) pillHtml=`<span class="sess-status-pill open">🟢 OPEN</span>`;
-    else if(isClosed) pillHtml=`<span class="sess-status-pill closed">🔒 CLOSED</span>`;
-    else pillHtml=`<span class="sess-status-pill closed">⏳ UPCOMING</span>`;
-
-    let btnHtml='';
-    if(isMarked){
-      btnHtml=`<button class="mark-btn done-btn">✅ Attendance Marked at ${sess.markedAt}</button>`;
-    } else if(isOpen){
-      btnHtml=`<button class="mark-btn active-btn" onclick="openScanModal('${sess.id}')">📸 Scan Face to Mark</button>`;
-    } else if(isClosed){
-      btnHtml=`<button class="mark-btn disabled-btn">🔒 Session Closed</button>`;
-    } else {
-      btnHtml=`<button class="mark-btn disabled-btn">⏳ Not Started Yet</button>`;
     }
 
-    return `<div class="session-card ${cardCls} glass">
+    // ══════════════════════════════════════════
+    // ATTENDANCE SESSION
+    // ══════════════════════════════════════════
+    function renderAttendance() {
+      const open = CS.sessions.filter(s => s.status === 'open');
+      const ob = document.getElementById('openSessionBanner');
+      if (open.length > 0) {
+        ob.style.display = 'flex';
+        document.getElementById('openCount').textContent = open.length;
+      } else ob.style.display = 'none';
+
+      document.getElementById('sessionGrid').innerHTML = CS.sessions.map(sess => {
+        const isOpen = sess.status === 'open';
+        const isMarked = sess.markedAt !== null;
+        const isClosed = sess.status === 'closed';
+        const isUpcoming = sess.status === 'upcoming';
+        const isLate = sess.markedStatus === 'LATE';
+
+        let cardCls = isMarked ? 'marked-session' : isOpen ? 'open-session' : 'closed-session';
+        let pillHtml = '';
+        if (isMarked) pillHtml = `<span class="sess-status-pill ${isLate ? 'late' : 'marked'}">${isLate ? '⏰ LATE' : '✅ MARKED'}</span>`;
+        else if (isOpen) pillHtml = `<span class="sess-status-pill open">🟢 OPEN</span>`;
+        else if (isClosed) pillHtml = `<span class="sess-status-pill closed">🔒 CLOSED</span>`;
+        else pillHtml = `<span class="sess-status-pill closed">⏳ UPCOMING</span>`;
+
+        let btnHtml = '';
+        if (isMarked) {
+          btnHtml = `<button class="mark-btn done-btn">✅ Attendance Marked at ${sess.markedAt}</button>`;
+        } else if (isOpen) {
+          btnHtml = `<button class="mark-btn active-btn" onclick="openScanModal('${sess.id}')">📸 Scan Face to Mark</button>`;
+        } else if (isClosed) {
+          btnHtml = `<button class="mark-btn disabled-btn">🔒 Session Closed</button>`;
+        } else {
+          btnHtml = `<button class="mark-btn disabled-btn">⏳ Not Started Yet</button>`;
+        }
+
+        return `<div class="session-card ${cardCls} glass">
       <div class="sess-top">
         <div style="display:flex;align-items:center;gap:10px">
           <div class="sess-icon" style="background:${sess.color}18">${sess.icon}</div>
@@ -917,18 +2029,18 @@ function renderAttendance(){
         <div class="sess-time-row"><span>⏰ Lecture Start</span><span class="sess-time-val">${sess.lecTime}</span></div>
         <div class="sess-time-row"><span>🔚 Lecture End</span><span class="sess-time-val">${sess.endTime}</span></div>
         <div class="sess-time-row"><span>⚠️ Late After</span><span class="sess-time-val" style="color:var(--amber)">${sess.lateAfter}</span></div>
-        ${isMarked?`<div class="sess-time-row"><span>✅ Marked At</span><span class="sess-time-val" style="color:${isLate?'var(--amber)':'var(--green)'}">${sess.markedAt} ${isLate?'(LATE)':''}</span></div>`:''}
+        ${isMarked ? `<div class="sess-time-row"><span>✅ Marked At</span><span class="sess-time-val" style="color:${isLate ? 'var(--amber)' : 'var(--green)'}">${sess.markedAt} ${isLate ? '(LATE)' : ''}</span></div>` : ''}
       </div>
-      ${isLate?`<div class="late-tag">⏰ Marked late by ${calcLateMin(sess.lecTime,sess.markedAt)} min — counts as LATE</div>`:''}
+      ${isLate ? `<div class="late-tag">⏰ Marked late by ${calcLateMin(sess.lecTime, sess.markedAt)} min — counts as LATE</div>` : ''}
       ${btnHtml}
     </div>`;
-  }).join('');
+      }).join('');
 
-  // today summary
-  const present=CS.sessions.filter(s=>s.markedAt&&s.markedStatus!=='LATE').length;
-  const late=CS.sessions.filter(s=>s.markedStatus==='LATE').length;
-  const absent=CS.sessions.filter(s=>!s.markedAt&&s.status!=='upcoming').length;
-  document.getElementById('todaySummary').innerHTML=`
+      // today summary
+      const present = CS.sessions.filter(s => s.markedAt && s.markedStatus !== 'LATE').length;
+      const late = CS.sessions.filter(s => s.markedStatus === 'LATE').length;
+      const absent = CS.sessions.filter(s => !s.markedAt && s.status !== 'upcoming').length;
+      document.getElementById('todaySummary').innerHTML = `
     <div style="text-align:center;background:rgba(0,245,160,.06);border:1px solid rgba(0,245,160,.15);border-radius:12px;padding:16px">
       <div style="font-size:26px;font-weight:800;color:var(--green)">${present}</div>
       <div style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:3px">PRESENT</div>
@@ -941,303 +2053,303 @@ function renderAttendance(){
       <div style="font-size:26px;font-weight:800;color:var(--red)">${absent}</div>
       <div style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:3px">ABSENT</div>
     </div>`;
-}
+    }
 
-function calcLateMin(lecTime,markedAt){
-  if(!lecTime||!markedAt||markedAt==='—') return 0;
-  const [lh,lm]=lecTime.split(':').map(Number);
-  const [mh,mm]=markedAt.split(':').map(Number);
-  return Math.max(0,(mh*60+mm)-(lh*60+lm));
-}
+    function calcLateMin(lecTime, markedAt) {
+      if (!lecTime || !markedAt || markedAt === '—') return 0;
+      const [lh, lm] = lecTime.split(':').map(Number);
+      const [mh, mm] = markedAt.split(':').map(Number);
+      return Math.max(0, (mh * 60 + mm) - (lh * 60 + lm));
+    }
 
-// ══════════════════════════════════════════
-// FACE SCAN MODAL
-// ══════════════════════════════════════════
-function openScanModal(sessId){
-  if(!CS.faceRegistered){
-    toast('⚠️ Register your face first!','warn');
-    openWizard(); return;
-  }
-  scanSession=CS.sessions.find(s=>s.id===sessId);
-  if(!scanSession) return;
-
-  document.getElementById('scanModalTitle').textContent='📸 Mark Attendance — '+scanSession.subjName;
-  document.getElementById('scanModalMeta').textContent=scanSession.code+' · '+scanSession.lecTime+' – '+scanSession.endTime+' · '+scanSession.room;
-
-  const now=new Date();
-  const nowStr=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
-  const lateMin=calcLateMin(scanSession.lecTime,nowStr);
-
-  if(lateMin>0){
-    document.getElementById('lateWarning').style.display='flex';
-    document.getElementById('lateDetail').textContent=`You are ${lateMin} minute${lateMin>1?'s':''} late. Attendance will be marked as LATE.`;
-  } else {
-    document.getElementById('lateWarning').style.display='none';
-  }
-
-  scanVerified=false;
-  document.getElementById('scanConfirmBtn').style.display='none';
-  document.getElementById('scanResultOverlay').classList.remove('show');
-  document.getElementById('scanModal').classList.add('open');
-
-  startScanCamera();
-}
-
-async function startScanCamera(){
-  try {
-    scanStream=await navigator.mediaDevices.getUserMedia({video:{width:480,height:360}});
-    const v=document.getElementById('scanVideo');
-    v.srcObject=scanStream; v.style.display='block';
-    document.getElementById('scanPlaceholder').style.display='none';
-    document.getElementById('scanFaceRing').style.display='block';
-    document.getElementById('scanStatusTxt').textContent='Face detected — hold still...';
-
-    // Simulate scan after 2.5s
-    let count=0;
-    scanInterval=setInterval(()=>{
-      count++;
-      document.getElementById('scanTimeTxt').textContent=`Scanning... ${count}/5`;
-      if(count>=5){ clearInterval(scanInterval); simulateScanResult(); }
-    },500);
-  } catch(e){
-    toast('Camera access denied','err');
-    closeScanModal();
-  }
-}
-
-function simulateScanResult(){
-  const success=Math.random()>0.15; // 85% success rate
-  const overlay=document.getElementById('scanResultOverlay');
-  const icon=document.getElementById('scanResultIcon');
-  const txt=document.getElementById('scanResultText');
-  const sub=document.getElementById('scanResultSub');
-  const score=(88+Math.random()*10).toFixed(1);
-
-  if(success){
-    icon.textContent='✅';
-    txt.textContent='Face Verified!';
-    sub.textContent=`Match: ${score}% · ${CS.name}`;
-    document.getElementById('scanStatusTxt').textContent='✅ Verified — '+score+'% match';
-    document.getElementById('scanStatusTxt').style.color='var(--green)';
-    scanVerified=true;
-    document.getElementById('scanConfirmBtn').style.display='flex';
-    document.getElementById('scanConfirmBtn').textContent='✅ Confirm Attendance';
-  } else {
-    icon.textContent='❌';
-    txt.textContent='Not Recognized';
-    sub.textContent='Face does not match profile. Try again.';
-    document.getElementById('scanStatusTxt').textContent='❌ Not recognized';
-    document.getElementById('scanStatusTxt').style.color='var(--red)';
-    setTimeout(()=>{
-      overlay.classList.remove('show');
-      document.getElementById('scanStatusTxt').textContent='Retrying scan...';
-      document.getElementById('scanStatusTxt').style.color='var(--green)';
-      let c=0;
-      scanInterval=setInterval(()=>{
-        c++;
-        document.getElementById('scanTimeTxt').textContent=`Scanning... ${c}/5`;
-        if(c>=5){ clearInterval(scanInterval); simulateScanResult(); }
-      },500);
-    },2000);
-  }
-  overlay.classList.add('show');
-}
-
-function confirmAttendance(){
-  if(!scanVerified||!scanSession) return;
-
-  const now=new Date();
-  const nowStr=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
-  const lateMin=calcLateMin(scanSession.lecTime,nowStr);
-  const isLate=lateMin>0;
-  const status=isLate?'LATE':'PRESENT';
-
-  // Update session
-  scanSession.markedAt=nowStr;
-  scanSession.markedStatus=status;
-
-  // Add to history
-  const score=(88+Math.random()*10).toFixed(1)+'%';
-  CS.history.unshift({
-    subj:scanSession.subjName, code:scanSession.code,
-    date:now.toISOString().slice(0,10),
-    lecTime:scanSession.lecTime, markedAt:nowStr,
-    lateBy:lateMin, status, score
-  });
-
-  // Update subject stats
-  const subj=CS.subjects.find(s=>s.id===scanSession.subjId);
-  if(subj){ subj.present++; subj.total++; if(isLate) subj.lateCount=(subj.lateCount||0)+1; }
-
-  closeScanModal();
-  renderAttendance();
-  renderDashboard();
-
-  if(isLate) toast(`⏰ Marked LATE for ${scanSession.subjName} (${lateMin} min late)`,'warn',4000);
-  else toast(`✅ Attendance marked for ${scanSession.subjName}!`,'ok');
-}
-
-function closeScanModal(){
-  stopStream(scanStream); scanStream=null;
-  clearInterval(scanInterval);
-  document.getElementById('scanModal').classList.remove('open');
-  document.getElementById('scanVideo').style.display='none';
-  document.getElementById('scanPlaceholder').style.display='flex';
-  document.getElementById('scanFaceRing').style.display='none';
-  document.getElementById('scanResultOverlay').classList.remove('show');
-  document.getElementById('scanTimeTxt').textContent='—';
-  document.getElementById('scanStatusTxt').textContent='Initializing...';
-  document.getElementById('scanStatusTxt').style.color='var(--green)';
-}
-
-// ══════════════════════════════════════════
-// FACE REGISTRATION WIZARD
-// ══════════════════════════════════════════
-function openWizard(){
-  document.getElementById('regWizard').classList.add('open');
-  showWizStep(0);
-}
-
-function closeWizard(){
-  document.getElementById('regWizard').classList.remove('open');
-  cancelReg();
-  if(CS.faceRegistered) document.getElementById('faceSetupBanner').style.display='none';
-}
-
-function showWizStep(n){
-  [0,1,2].forEach(i=>{
-    document.getElementById('wizStep'+i).style.display=i===n?'block':'none';
-    const rs=document.getElementById('rs'+i);
-    rs.className='reg-step'+(i<n?' done':i===n?' active':'');
-  });
-}
-
-function wizNext(){
-  showWizStep(1);
-  startRegCamera();
-}
-
-async function startRegCamera(){
-  try{
-    regStream=await navigator.mediaDevices.getUserMedia({video:{width:480,height:360}});
-    const v=document.getElementById('regVideo');
-    v.srcObject=regStream; v.autoplay=true; v.muted=true;
-    v.style.display='block';
-    document.getElementById('regPlaceholder').style.display='none';
-    document.getElementById('scanRing').style.display='block';
-    document.getElementById('camOverlay').style.display='flex';
-
-    regSamples=0;
-    regInterval=setInterval(()=>{
-      if(regSamples<40){
-        regSamples++;
-        const p=Math.round(regSamples/40*100);
-        document.getElementById('regProgBar').style.width=p+'%';
-        document.getElementById('regPct').textContent=p+'%';
-        document.getElementById('regSampleTxt').textContent=`Capturing ${regSamples}/40 samples`;
-        document.getElementById('regHint').textContent=`Scanning face geometry — sample ${regSamples} of 40`;
-      } else {
-        clearInterval(regInterval);
-        finishReg();
+    // ══════════════════════════════════════════
+    // FACE SCAN MODAL
+    // ══════════════════════════════════════════
+    function openScanModal(sessId) {
+      if (!CS.faceRegistered) {
+        toast('⚠️ Register your face first!', 'warn');
+        openWizard(); return;
       }
-    },100);
-  } catch(e){
-    toast('Camera access denied','err');
-    closeWizard();
-  }
-}
+      scanSession = CS.sessions.find(s => s.id === sessId);
+      if (!scanSession) return;
 
-function finishReg(){
-  stopStream(regStream); regStream=null;
-  CS.faceRegistered=true;
+      document.getElementById('scanModalTitle').textContent = '📸 Mark Attendance — ' + scanSession.subjName;
+      document.getElementById('scanModalMeta').textContent = scanSession.code + ' · ' + scanSession.lecTime + ' – ' + scanSession.endTime + ' · ' + scanSession.room;
 
-  // fake profile ratios
-  const profile={
-    'Golden Ratio':(1.55+Math.random()*.12).toFixed(4),
-    'Eye Ratio':(0.39+Math.random()*.07).toFixed(4),
-    'Symmetry':(83+Math.random()*13).toFixed(1)+'%',
-    'Jaw Ratio':(0.68+Math.random()*.1).toFixed(4),
-    'Nose Ratio':(0.56+Math.random()*.08).toFixed(4),
-  };
+      const now = new Date();
+      const nowStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+      const lateMin = calcLateMin(scanSession.lecTime, nowStr);
 
-  document.getElementById('regRatioDisplay').innerHTML=
-    `<div style="font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Your Face Profile</div>`+
-    Object.entries(profile).map(([k,v])=>`
+      if (lateMin > 0) {
+        document.getElementById('lateWarning').style.display = 'flex';
+        document.getElementById('lateDetail').textContent = `You are ${lateMin} minute${lateMin > 1 ? 's' : ''} late. Attendance will be marked as LATE.`;
+      } else {
+        document.getElementById('lateWarning').style.display = 'none';
+      }
+
+      scanVerified = false;
+      document.getElementById('scanConfirmBtn').style.display = 'none';
+      document.getElementById('scanResultOverlay').classList.remove('show');
+      document.getElementById('scanModal').classList.add('open');
+
+      startScanCamera();
+    }
+
+    async function startScanCamera() {
+      try {
+        scanStream = await navigator.mediaDevices.getUserMedia({ video: { width: 480, height: 360 } });
+        const v = document.getElementById('scanVideo');
+        v.srcObject = scanStream; v.style.display = 'block';
+        document.getElementById('scanPlaceholder').style.display = 'none';
+        document.getElementById('scanFaceRing').style.display = 'block';
+        document.getElementById('scanStatusTxt').textContent = 'Face detected — hold still...';
+
+        // Simulate scan after 2.5s
+        let count = 0;
+        scanInterval = setInterval(() => {
+          count++;
+          document.getElementById('scanTimeTxt').textContent = `Scanning... ${count}/5`;
+          if (count >= 5) { clearInterval(scanInterval); simulateScanResult(); }
+        }, 500);
+      } catch (e) {
+        toast('Camera access denied', 'err');
+        closeScanModal();
+      }
+    }
+
+    function simulateScanResult() {
+      const success = Math.random() > 0.15; // 85% success rate
+      const overlay = document.getElementById('scanResultOverlay');
+      const icon = document.getElementById('scanResultIcon');
+      const txt = document.getElementById('scanResultText');
+      const sub = document.getElementById('scanResultSub');
+      const score = (88 + Math.random() * 10).toFixed(1);
+
+      if (success) {
+        icon.textContent = '✅';
+        txt.textContent = 'Face Verified!';
+        sub.textContent = `Match: ${score}% · ${CS.name}`;
+        document.getElementById('scanStatusTxt').textContent = '✅ Verified — ' + score + '% match';
+        document.getElementById('scanStatusTxt').style.color = 'var(--green)';
+        scanVerified = true;
+        document.getElementById('scanConfirmBtn').style.display = 'flex';
+        document.getElementById('scanConfirmBtn').textContent = '✅ Confirm Attendance';
+      } else {
+        icon.textContent = '❌';
+        txt.textContent = 'Not Recognized';
+        sub.textContent = 'Face does not match profile. Try again.';
+        document.getElementById('scanStatusTxt').textContent = '❌ Not recognized';
+        document.getElementById('scanStatusTxt').style.color = 'var(--red)';
+        setTimeout(() => {
+          overlay.classList.remove('show');
+          document.getElementById('scanStatusTxt').textContent = 'Retrying scan...';
+          document.getElementById('scanStatusTxt').style.color = 'var(--green)';
+          let c = 0;
+          scanInterval = setInterval(() => {
+            c++;
+            document.getElementById('scanTimeTxt').textContent = `Scanning... ${c}/5`;
+            if (c >= 5) { clearInterval(scanInterval); simulateScanResult(); }
+          }, 500);
+        }, 2000);
+      }
+      overlay.classList.add('show');
+    }
+
+    function confirmAttendance() {
+      if (!scanVerified || !scanSession) return;
+
+      const now = new Date();
+      const nowStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+      const lateMin = calcLateMin(scanSession.lecTime, nowStr);
+      const isLate = lateMin > 0;
+      const status = isLate ? 'LATE' : 'PRESENT';
+
+      // Update session
+      scanSession.markedAt = nowStr;
+      scanSession.markedStatus = status;
+
+      // Add to history
+      const score = (88 + Math.random() * 10).toFixed(1) + '%';
+      CS.history.unshift({
+        subj: scanSession.subjName, code: scanSession.code,
+        date: now.toISOString().slice(0, 10),
+        lecTime: scanSession.lecTime, markedAt: nowStr,
+        lateBy: lateMin, status, score
+      });
+
+      // Update subject stats
+      const subj = CS.subjects.find(s => s.id === scanSession.subjId);
+      if (subj) { subj.present++; subj.total++; if (isLate) subj.lateCount = (subj.lateCount || 0) + 1; }
+
+      closeScanModal();
+      renderAttendance();
+      renderDashboard();
+
+      if (isLate) toast(`⏰ Marked LATE for ${scanSession.subjName} (${lateMin} min late)`, 'warn', 4000);
+      else toast(`✅ Attendance marked for ${scanSession.subjName}!`, 'ok');
+    }
+
+    function closeScanModal() {
+      stopStream(scanStream); scanStream = null;
+      clearInterval(scanInterval);
+      document.getElementById('scanModal').classList.remove('open');
+      document.getElementById('scanVideo').style.display = 'none';
+      document.getElementById('scanPlaceholder').style.display = 'flex';
+      document.getElementById('scanFaceRing').style.display = 'none';
+      document.getElementById('scanResultOverlay').classList.remove('show');
+      document.getElementById('scanTimeTxt').textContent = '—';
+      document.getElementById('scanStatusTxt').textContent = 'Initializing...';
+      document.getElementById('scanStatusTxt').style.color = 'var(--green)';
+    }
+
+    // ══════════════════════════════════════════
+    // FACE REGISTRATION WIZARD
+    // ══════════════════════════════════════════
+    function openWizard() {
+      document.getElementById('regWizard').classList.add('open');
+      showWizStep(0);
+    }
+
+    function closeWizard() {
+      document.getElementById('regWizard').classList.remove('open');
+      cancelReg();
+      if (CS.faceRegistered) document.getElementById('faceSetupBanner').style.display = 'none';
+    }
+
+    function showWizStep(n) {
+      [0, 1, 2].forEach(i => {
+        document.getElementById('wizStep' + i).style.display = i === n ? 'block' : 'none';
+        const rs = document.getElementById('rs' + i);
+        rs.className = 'reg-step' + (i < n ? ' done' : i === n ? ' active' : '');
+      });
+    }
+
+    function wizNext() {
+      showWizStep(1);
+      startRegCamera();
+    }
+
+    async function startRegCamera() {
+      try {
+        regStream = await navigator.mediaDevices.getUserMedia({ video: { width: 480, height: 360 } });
+        const v = document.getElementById('regVideo');
+        v.srcObject = regStream; v.autoplay = true; v.muted = true;
+        v.style.display = 'block';
+        document.getElementById('regPlaceholder').style.display = 'none';
+        document.getElementById('scanRing').style.display = 'block';
+        document.getElementById('camOverlay').style.display = 'flex';
+
+        regSamples = 0;
+        regInterval = setInterval(() => {
+          if (regSamples < 40) {
+            regSamples++;
+            const p = Math.round(regSamples / 40 * 100);
+            document.getElementById('regProgBar').style.width = p + '%';
+            document.getElementById('regPct').textContent = p + '%';
+            document.getElementById('regSampleTxt').textContent = `Capturing ${regSamples}/40 samples`;
+            document.getElementById('regHint').textContent = `Scanning face geometry — sample ${regSamples} of 40`;
+          } else {
+            clearInterval(regInterval);
+            finishReg();
+          }
+        }, 100);
+      } catch (e) {
+        toast('Camera access denied', 'err');
+        closeWizard();
+      }
+    }
+
+    function finishReg() {
+      stopStream(regStream); regStream = null;
+      CS.faceRegistered = true;
+
+      // fake profile ratios
+      const profile = {
+        'Golden Ratio': (1.55 + Math.random() * .12).toFixed(4),
+        'Eye Ratio': (0.39 + Math.random() * .07).toFixed(4),
+        'Symmetry': (83 + Math.random() * 13).toFixed(1) + '%',
+        'Jaw Ratio': (0.68 + Math.random() * .1).toFixed(4),
+        'Nose Ratio': (0.56 + Math.random() * .08).toFixed(4),
+      };
+
+      document.getElementById('regRatioDisplay').innerHTML =
+        `<div style="font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Your Face Profile</div>` +
+        Object.entries(profile).map(([k, v]) => `
       <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)">
         <span style="font-size:11px;color:var(--muted)">${k}</span>
         <span style="font-family:var(--mono);font-size:11px;color:var(--green)">${v}</span>
       </div>`).join('');
 
-  showWizStep(2);
-  document.getElementById('faceSetupBanner').style.display='none';
-  toast('🎉 Face registered successfully!','ok');
-}
+      showWizStep(2);
+      document.getElementById('faceSetupBanner').style.display = 'none';
+      toast('🎉 Face registered successfully!', 'ok');
+    }
 
-function cancelReg(){
-  stopStream(regStream); regStream=null;
-  clearInterval(regInterval);
-  document.getElementById('regVideo').style.display='none';
-  document.getElementById('regPlaceholder').style.display='flex';
-  document.getElementById('scanRing').style.display='none';
-}
+    function cancelReg() {
+      stopStream(regStream); regStream = null;
+      clearInterval(regInterval);
+      document.getElementById('regVideo').style.display = 'none';
+      document.getElementById('regPlaceholder').style.display = 'flex';
+      document.getElementById('scanRing').style.display = 'none';
+    }
 
-// ══════════════════════════════════════════
-// HISTORY
-// ══════════════════════════════════════════
-function populateHistFilters(){
-  const sf=document.getElementById('histSubj');
-  sf.innerHTML='<option value="">All Subjects</option>'+
-    CS.subjects.map(s=>`<option value="${s.name}">${s.name}</option>`).join('');
-}
+    // ══════════════════════════════════════════
+    // HISTORY
+    // ══════════════════════════════════════════
+    function populateHistFilters() {
+      const sf = document.getElementById('histSubj');
+      sf.innerHTML = '<option value="">All Subjects</option>' +
+        CS.subjects.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+    }
 
-function renderHistory(){
-  let recs=[...CS.history];
-  const sf=document.getElementById('histSubj').value;
-  const st=document.getElementById('histStatus').value;
-  if(sf) recs=recs.filter(r=>r.subj===sf);
-  if(st) recs=recs.filter(r=>r.status===st);
+    function renderHistory() {
+      let recs = [...CS.history];
+      const sf = document.getElementById('histSubj').value;
+      const st = document.getElementById('histStatus').value;
+      if (sf) recs = recs.filter(r => r.subj === sf);
+      if (st) recs = recs.filter(r => r.status === st);
 
-  const s2c={};
-  CS.subjects.forEach(s=>s2c[s.name]=s.color);
+      const s2c = {};
+      CS.subjects.forEach(s => s2c[s.name] = s.color);
 
-  const tbody=document.getElementById('histTable');
-  if(!recs.length){
-    tbody.innerHTML=`<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:32px;font-family:var(--mono);font-size:10px">NO RECORDS</td></tr>`;
-    return;
-  }
-  tbody.innerHTML=recs.map((r,i)=>{
-    const statusCls=r.status==='PRESENT'?'b-present':r.status==='LATE'?'b-late':'b-absent';
-    const lateCell=r.lateBy>0?`<span style="color:var(--amber);font-family:var(--mono);font-size:10px">+${r.lateBy}m</span>`:`<span style="color:var(--muted);font-size:10px">—</span>`;
-    return `<tr>
-      <td style="font-family:var(--mono);font-size:9px;color:var(--muted)">${i+1}</td>
+      const tbody = document.getElementById('histTable');
+      if (!recs.length) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:32px;font-family:var(--mono);font-size:10px">NO RECORDS</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = recs.map((r, i) => {
+        const statusCls = r.status === 'PRESENT' ? 'b-present' : r.status === 'LATE' ? 'b-late' : 'b-absent';
+        const lateCell = r.lateBy > 0 ? `<span style="color:var(--amber);font-family:var(--mono);font-size:10px">+${r.lateBy}m</span>` : `<span style="color:var(--muted);font-size:10px">—</span>`;
+        return `<tr>
+      <td style="font-family:var(--mono);font-size:9px;color:var(--muted)">${i + 1}</td>
       <td>
         <div style="display:flex;align-items:center;gap:7px">
-          <div style="width:8px;height:8px;border-radius:50%;background:${s2c[r.subj]||'#888'};flex-shrink:0"></div>
+          <div style="width:8px;height:8px;border-radius:50%;background:${s2c[r.subj] || '#888'};flex-shrink:0"></div>
           <div><div style="font-weight:600;font-size:12px">${r.subj}</div><div style="font-family:var(--mono);font-size:9px;color:var(--muted)">${r.code}</div></div>
         </div>
       </td>
       <td style="font-family:var(--mono);font-size:10px">${r.date}</td>
       <td style="font-family:var(--mono);font-size:10px;color:var(--muted)">${r.lecTime}</td>
-      <td style="font-family:var(--mono);font-size:10px;color:${r.status==='LATE'?'var(--amber)':r.status==='PRESENT'?'var(--green)':'var(--muted)'}">${r.markedAt}</td>
+      <td style="font-family:var(--mono);font-size:10px;color:${r.status === 'LATE' ? 'var(--amber)' : r.status === 'PRESENT' ? 'var(--green)' : 'var(--muted)'}">${r.markedAt}</td>
       <td>${lateCell}</td>
       <td><span class="badge ${statusCls}">${r.status}</span></td>
       <td style="font-family:var(--mono);font-size:10px;color:var(--green)">${r.score}</td>
     </tr>`;
-  }).join('');
-}
+      }).join('');
+    }
 
-// ══════════════════════════════════════════
-// ALERTS
-// ══════════════════════════════════════════
-function renderAlerts(){
-  const totP=CS.subjects.reduce((a,s)=>a+s.present,0);
-  const totT=CS.subjects.reduce((a,s)=>a+s.total,0);
-  const ov=totT?Math.round(totP/totT*100):0;
-  const safe=CS.subjects.filter(s=>pct(s)>=75).length;
-  const low=CS.subjects.filter(s=>pct(s)<75&&pct(s)>=60).length;
-  const crit=CS.subjects.filter(s=>pct(s)<60).length;
+    // ══════════════════════════════════════════
+    // ALERTS
+    // ══════════════════════════════════════════
+    function renderAlerts() {
+      const totP = CS.subjects.reduce((a, s) => a + s.present, 0);
+      const totT = CS.subjects.reduce((a, s) => a + s.total, 0);
+      const ov = totT ? Math.round(totP / totT * 100) : 0;
+      const safe = CS.subjects.filter(s => pct(s) >= 75).length;
+      const low = CS.subjects.filter(s => pct(s) < 75 && pct(s) >= 60).length;
+      const crit = CS.subjects.filter(s => pct(s) < 60).length;
 
-  document.getElementById('alertStats').innerHTML=`
+      document.getElementById('alertStats').innerHTML = `
     <div style="text-align:center;background:rgba(0,245,160,.06);border:1px solid rgba(0,245,160,.15);border-radius:12px;padding:18px">
       <div style="font-size:28px;font-weight:800;color:var(--green)">${safe}</div>
       <div style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:3px">SAFE ✅</div>
@@ -1251,14 +2363,14 @@ function renderAlerts(){
       <div style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:3px">CRITICAL 🚨</div>
     </div>`;
 
-  const need=CS.subjects.filter(s=>pct(s)<75);
-  let scHtml=`<div class="card glass" style="padding:18px">
+      const need = CS.subjects.filter(s => pct(s) < 75);
+      let scHtml = `<div class="card glass" style="padding:18px">
     <div style="font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Subjects Needing Attention</div>`;
-  scHtml+=need.length?need.map(s=>{
-    const p=pct(s);
-    const n=Math.ceil((0.75*s.total-s.present)/(1-0.75));
-    const col=p<60?'var(--red)':'var(--amber)';
-    return `<div style="display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--border)">
+      scHtml += need.length ? need.map(s => {
+        const p = pct(s);
+        const n = Math.ceil((0.75 * s.total - s.present) / (1 - 0.75));
+        const col = p < 60 ? 'var(--red)' : 'var(--amber)';
+        return `<div style="display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--border)">
       <div style="width:10px;height:10px;border-radius:50%;background:${s.color};flex-shrink:0"></div>
       <div style="flex:1"><div style="font-size:12px;font-weight:700">${s.name}</div>
         <div style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:2px">${s.present}/${s.total} · ${s.lateCount} late</div>
@@ -1268,71 +2380,74 @@ function renderAlerts(){
         <div style="font-family:var(--mono);font-size:9px;color:var(--red)">Need ${n} more</div>
       </div>
     </div>`;
-  }).join(''):`<div style="text-align:center;color:var(--green);padding:22px;font-size:13px;font-weight:700">🎉 All subjects safe!</div>`;
-  scHtml+='</div>';
-  document.getElementById('shortageCards').innerHTML=scHtml;
+      }).join('') : `<div style="text-align:center;color:var(--green);padding:22px;font-size:13px;font-weight:700">🎉 All subjects safe!</div>`;
+      scHtml += '</div>';
+      document.getElementById('shortageCards').innerHTML = scHtml;
 
-  const col=ov>=75?'var(--green)':ov>=60?'var(--amber)':'var(--red)';
-  document.getElementById('overallNum').textContent=ov+'%';
-  document.getElementById('overallNum').style.color=col;
-  document.getElementById('overallMsg').textContent=ov>=75?'✅ You are safe!':ov>=60?'⚠️ Borderline':'🚨 Critical';
-  document.getElementById('overallBar').style.width=ov+'%';
-  document.getElementById('overallBar').style.background=col;
+      const col = ov >= 75 ? 'var(--green)' : ov >= 60 ? 'var(--amber)' : 'var(--red)';
+      document.getElementById('overallNum').textContent = ov + '%';
+      document.getElementById('overallNum').style.color = col;
+      document.getElementById('overallMsg').textContent = ov >= 75 ? '✅ You are safe!' : ov >= 60 ? '⚠️ Borderline' : '🚨 Critical';
+      document.getElementById('overallBar').style.width = ov + '%';
+      document.getElementById('overallBar').style.background = col;
 
-  document.getElementById('lecNeeded').innerHTML=need.length
-    ?need.map(s=>{const n=Math.ceil((0.75*s.total-s.present)/(1-0.75));
-      return `<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
+      document.getElementById('lecNeeded').innerHTML = need.length
+        ? need.map(s => {
+          const n = Math.ceil((0.75 * s.total - s.present) / (1 - 0.75));
+          return `<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
         <span style="font-size:12px;font-weight:600">${s.name}</span>
         <span style="font-family:var(--mono);font-size:11px;color:var(--red);font-weight:700">${n} lectures</span>
-      </div>`;}).join('')
-    :`<div style="color:var(--green);font-size:12px;font-weight:600;padding:10px 0">All subjects at 75% ✅</div>`;
-}
+      </div>`;
+        }).join('')
+        : `<div style="color:var(--green);font-size:12px;font-weight:600;padding:10px 0">All subjects at 75% ✅</div>`;
+    }
 
-// ══════════════════════════════════════════
-// PROFILE
-// ══════════════════════════════════════════
-function renderProfile(){
-  document.getElementById('profName').textContent=CS.name;
-  document.getElementById('profId').textContent=CS.id;
-  document.getElementById('profChips').innerHTML=
-    `<span style="background:var(--glass);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:11px;color:var(--muted);font-family:var(--mono)">${CS.batch}</span>
+    // ══════════════════════════════════════════
+    // PROFILE
+    // ══════════════════════════════════════════
+    function renderProfile() {
+      document.getElementById('profName').textContent = CS.name;
+      document.getElementById('profId').textContent = CS.id;
+      document.getElementById('profChips').innerHTML =
+        `<span style="background:var(--glass);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:11px;color:var(--muted);font-family:var(--mono)">${CS.batch}</span>
      <span style="background:var(--glass);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:11px;color:var(--muted);font-family:var(--mono)">${CS.dept}</span>
      <span style="background:var(--glass);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:11px;color:var(--muted);font-family:var(--mono)">${CS.sem}</span>`;
 
-  // face status
-  const fr=document.getElementById('faceRegStatus');
-  if(CS.faceRegistered){
-    fr.innerHTML=`<div class="face-reg-card registered"><span style="font-size:24px">✅</span><div><div style="font-size:13px;font-weight:700;color:var(--green)">Face Registered</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Your facial profile is active</div></div></div>`;
-  } else {
-    fr.innerHTML=`<div class="face-reg-card not-reg" style="cursor:pointer" onclick="openWizard()"><span style="font-size:24px">❌</span><div><div style="font-size:13px;font-weight:700;color:var(--red)">Face Not Registered</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Click here to set up face recognition →</div></div></div>`;
-  }
+      // face status
+      const fr = document.getElementById('faceRegStatus');
+      if (CS.faceRegistered) {
+        fr.innerHTML = `<div class="face-reg-card registered"><span style="font-size:24px">✅</span><div><div style="font-size:13px;font-weight:700;color:var(--green)">Face Registered</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Your facial profile is active</div></div></div>`;
+      } else {
+        fr.innerHTML = `<div class="face-reg-card not-reg" style="cursor:pointer" onclick="openWizard()"><span style="font-size:24px">❌</span><div><div style="font-size:13px;font-weight:700;color:var(--red)">Face Not Registered</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Click here to set up face recognition →</div></div></div>`;
+      }
 
-  document.getElementById('profAttList').innerHTML=CS.subjects.map(s=>{
-    const p=pct(s);
-    const col=p>=75?'var(--green)':p>=60?'var(--amber)':'var(--red)';
-    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+      document.getElementById('profAttList').innerHTML = CS.subjects.map(s => {
+        const p = pct(s);
+        const col = p >= 75 ? 'var(--green)' : p >= 60 ? 'var(--amber)' : 'var(--red)';
+        return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
       <div style="width:8px;height:8px;border-radius:50%;background:${s.color};flex-shrink:0"></div>
       <span style="flex:1;font-size:12px;font-weight:600">${s.name}</span>
       <span style="font-family:var(--mono);font-size:10px;color:var(--muted)">${s.present}/${s.total}</span>
       <span style="font-family:var(--mono);font-size:12px;font-weight:700;color:${col};min-width:38px;text-align:right">${p}%</span>
     </div>`;
-  }).join('');
-}
+      }).join('');
+    }
 
-// ══════════════════════════════════════════
-// UTILS
-// ══════════════════════════════════════════
-function stopStream(stream){ stream?.getTracks().forEach(t=>t.stop()); }
-function stopAllStreams(){ stopStream(regStream); stopStream(scanStream); clearInterval(regInterval); clearInterval(scanInterval); }
+    // ══════════════════════════════════════════
+    // UTILS
+    // ══════════════════════════════════════════
+    function stopStream(stream) { stream?.getTracks().forEach(t => t.stop()); }
+    function stopAllStreams() { stopStream(regStream); stopStream(scanStream); clearInterval(regInterval); clearInterval(scanInterval); }
 
-function toast(msg,type='inf',dur=3500){
-  const icons={ok:'✅',err:'❌',inf:'💡',warn:'⏰'};
-  const el=document.createElement('div');
-  el.className=`toast ${type}`;
-  el.innerHTML=`<span>${icons[type]}</span><span>${msg}</span>`;
-  document.getElementById('toastBox').appendChild(el);
-  setTimeout(()=>el.remove(),dur);
-}
-</script>
+    function toast(msg, type = 'inf', dur = 3500) {
+      const icons = { ok: '✅', err: '❌', inf: '💡', warn: '⏰' };
+      const el = document.createElement('div');
+      el.className = `toast ${type}`;
+      el.innerHTML = `<span>${icons[type]}</span><span>${msg}</span>`;
+      document.getElementById('toastBox').appendChild(el);
+      setTimeout(() => el.remove(), dur);
+    }
+  </script>
 </body>
+
 </html>
