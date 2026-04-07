@@ -14,7 +14,7 @@ def get_db():
         host     = "localhost",
         user     = "root",
         password = DB_PASSWORD,
-        database = "axiom_attendance"
+        database = "axiom_db"
     )
 
 # ────────────────────────────────────────
