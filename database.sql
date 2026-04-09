@@ -1,5 +1,5 @@
 -- ============================================================
---  AXIOM – Face Recognition Attendance System
+--  AXIOM - Face Recognition Attendance System
 --  MySQL Database Schema
 --  Version: 1.0
 -- ============================================================
@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS organizations (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
+
 -- ============================================================
 -- TABLE 2: teachers
 -- Teachers / managers who verify students and manage groups
@@ -38,7 +39,7 @@ CREATE TABLE IF NOT EXISTS teachers (
   password_hash     VARCHAR(255)      NOT NULL,          -- bcrypt hash
   phone             VARCHAR(20)       DEFAULT NULL,
   assigned_dept     VARCHAR(100)      DEFAULT NULL,      -- department/field they manage
-  assigned_group    CHAR(5)           DEFAULT NULL,      -- group/section (A, B, C…)
+  assigned_group    CHAR(5)           DEFAULT NULL,      -- group/section (A, B, C...)
   is_active         TINYINT(1)        NOT NULL DEFAULT 1,
   last_login        TIMESTAMP         DEFAULT NULL,
   created_at        TIMESTAMP         NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -51,7 +52,7 @@ CREATE TABLE IF NOT EXISTS teachers (
 
 -- ============================================================
 -- TABLE 3: students
--- Core user table – everyone who registers via the AXIOM portal
+-- Core user table - everyone who registers via the AXIOM portal
 -- ============================================================
 CREATE TABLE IF NOT EXISTS students (
   id              INT UNSIGNED      NOT NULL AUTO_INCREMENT,
@@ -242,14 +243,54 @@ CREATE INDEX idx_att_student        ON attendance_records(student_id);
 
 
 -- ============================================================
--- SAMPLE SEED DATA (optional – remove in production)
+-- TABLE 11: subjects
+-- Academic courses / subjects
 -- ============================================================
+CREATE TABLE IF NOT EXISTS subjects (
+  id              INT UNSIGNED      NOT NULL AUTO_INCREMENT,
+  org_id          INT UNSIGNED      DEFAULT NULL,
+  subject_name    VARCHAR(150)      NOT NULL,
+  subject_code    VARCHAR(20)       NOT NULL UNIQUE,
+  department      VARCHAR(100)      DEFAULT NULL,
+  color_code      VARCHAR(7)        DEFAULT '#a29bfe',    -- Hex color for UI
+  icon_char       VARCHAR(5)        DEFAULT '📘',
+  created_at      TIMESTAMP         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (id),
+  CONSTRAINT fk_subj_org     FOREIGN KEY (org_id)
+    REFERENCES organizations(id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- ============================================================
+-- TABLE 12: enrollments
+-- Mapping students to subjects
+-- ============================================================
+CREATE TABLE IF NOT EXISTS enrollments (
+  id              INT UNSIGNED      NOT NULL AUTO_INCREMENT,
+  student_id      INT UNSIGNED      NOT NULL,
+  subject_id      INT UNSIGNED      NOT NULL,
+  enrolled_at     TIMESTAMP         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_student_subject (student_id, subject_id),
+  CONSTRAINT fk_enr_student   FOREIGN KEY (student_id)
+    REFERENCES students(id)  ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT fk_enr_subject   FOREIGN KEY (subject_id)
+    REFERENCES subjects(id)  ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- ============================================================
+-- SAMPLE SEEDS (Continued)
+-- ============================================================
+
 
 -- Default organization
 INSERT INTO organizations (name, type, contact_email)
 VALUES ('AXIOM Demo Organization', 'institution', 'admin@axiom.app');
 
--- Default teacher (password: Teacher@123 — bcrypt hashed below)
+-- Default teacher (password: Teacher@123 - bcrypt hashed below)
 INSERT INTO teachers (org_id, full_name, email, password_hash, assigned_dept, assigned_group)
 VALUES (
   1,
@@ -260,7 +301,7 @@ VALUES (
   'A'
 );
 
--- Demo student (password: Student@123 — bcrypt hashed below, status = verified)
+-- Demo student (password: Student@123 - bcrypt hashed below, status = verified)
 INSERT INTO students (
   org_id, mentor_id, first_name, last_name, email, phone,
   roll_no, department, year_level, group_section,

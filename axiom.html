@@ -485,7 +485,7 @@
 // =====================================================
 //  CONFIG – change this to your server URL
 // =====================================================
-const API_BASE = 'http://localhost:3000/api';
+const API_BASE = '/api';
 
 // =====================================================
 //  PARTICLES
@@ -612,7 +612,7 @@ async function doRegister() {
 
   try {
     showToast('Submitting...', 'success');
-    const res  = await fetch('http://localhost:5000/api/register', {
+    const res  = await fetch('/api/register', {
       method  : 'POST',
       headers : { 'Content-Type': 'application/json' },
       body    : JSON.stringify(payload)
@@ -643,7 +643,7 @@ async function doLogin() {
 
   try {
     showToast('Authenticating...', 'success');
-    const res  = await fetch('http://localhost:5000/api/login', {
+    const res  = await fetch('/api/login', {
       method  : 'POST',
       headers : { 'Content-Type': 'application/json' },
       body    : JSON.stringify({ username: u, password: p })
@@ -668,14 +668,6 @@ async function doLogin() {
   }
 }
 
-  catch (err) {
-    showToast('Cannot reach server. Is it running?','warn');
-    console.error(err);
-  } finally {
-    setBtn('btn-login', false, 'LOGIN TO AXIOM →');
-  }
-}
-
 // =====================================================
 //  TEACHER LOGIN  →  POST /api/teacher/login
 // =====================================================
@@ -686,7 +678,7 @@ async function doTeacherLogin() {
 
   setBtn('btn-teacher-login', true, '');
   try {
-    const res  = await fetch(`${API_BASE}/teacher/login`, {
+    const res  = await fetch(`${API_BASE}/teacher-login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),

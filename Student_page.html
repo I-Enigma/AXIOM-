@@ -1744,67 +1744,9 @@
 
   <script>
     // ══════════════════════════════════════════
-    // DATA
+    // STATE & DATA
     // ══════════════════════════════════════════
-    const STUDENTS = {
-      'CS2024101': {
-        password: 'axiom123', name: 'Rahul Sharma', id: 'CS2024101',
-        batch: 'CS-2024-A', sem: '3rd Year · Sem 5', dept: 'Computer Science',
-        faceRegistered: false,
-        subjects: [
-          { id: 's1', name: 'Data Structures', code: 'CS301', color: '#a29bfe', icon: '🧮', present: 18, total: 22, lateCount: 2 },
-          { id: 's2', name: 'Computer Networks', code: 'CS401', color: '#74b9ff', icon: '🌐', present: 14, total: 20, lateCount: 3 },
-          { id: 's3', name: 'Operating Systems', code: 'CS302', color: '#fd79a8', icon: '💻', present: 12, total: 18, lateCount: 1 },
-          { id: 's4', name: 'Python Programming', code: 'IT201', color: '#00b894', icon: '🐍', present: 19, total: 20, lateCount: 0 },
-        ],
-        history: [
-          { subj: 'Data Structures', code: 'CS301', date: '2025-07-14', lecTime: '09:00', markedAt: '09:04', lateBy: 4, status: 'LATE', score: '94.2%' },
-          { subj: 'Computer Networks', code: 'CS401', date: '2025-07-14', lecTime: '10:00', markedAt: '10:01', lateBy: 1, status: 'PRESENT', score: '91.5%' },
-          { subj: 'Operating Systems', code: 'CS302', date: '2025-07-14', lecTime: '11:00', markedAt: '—', lateBy: 0, status: 'ABSENT', score: '—' },
-          { subj: 'Python Programming', code: 'IT201', date: '2025-07-13', lecTime: '13:00', markedAt: '13:00', lateBy: 0, status: 'PRESENT', score: '96.1%' },
-          { subj: 'Data Structures', code: 'CS301', date: '2025-07-13', lecTime: '09:00', markedAt: '09:12', lateBy: 12, status: 'LATE', score: '92.8%' },
-          { subj: 'Computer Networks', code: 'CS401', date: '2025-07-12', lecTime: '10:00', markedAt: '—', lateBy: 0, status: 'ABSENT', score: '—' },
-          { subj: 'Operating Systems', code: 'CS302', date: '2025-07-12', lecTime: '11:00', markedAt: '—', lateBy: 0, status: 'ABSENT', score: '—' },
-          { subj: 'Python Programming', code: 'IT201', date: '2025-07-11', lecTime: '13:00', markedAt: '13:00', lateBy: 0, status: 'PRESENT', score: '89.3%' },
-          { subj: 'Data Structures', code: 'CS301', date: '2025-07-11', lecTime: '09:00', markedAt: '09:00', lateBy: 0, status: 'PRESENT', score: '93.5%' },
-          { subj: 'Computer Networks', code: 'CS401', date: '2025-07-10', lecTime: '10:00', markedAt: '10:00', lateBy: 0, status: 'PRESENT', score: '90.1%' },
-        ],
-        streak: [true, true, false, true, true, true, false, true, true, true, true, false, true, true],
-        sessions: [
-          {
-            id: 'sess1', subjId: 's1', subjName: 'Data Structures', code: 'CS301', color: '#a29bfe', icon: '🧮',
-            lecTime: '09:00', endTime: '10:00', lateAfter: '09:10', room: 'Room 301',
-            status: 'open', markedAt: null, markedStatus: null
-          },
-          {
-            id: 'sess2', subjId: 's2', subjName: 'Computer Networks', code: 'CS401', color: '#74b9ff', icon: '🌐',
-            lecTime: '10:00', endTime: '11:00', lateAfter: '10:10', room: 'Lab 2',
-            status: 'open', markedAt: null, markedStatus: null
-          },
-          {
-            id: 'sess3', subjId: 's3', subjName: 'Operating Systems', code: 'CS302', color: '#fd79a8', icon: '💻',
-            lecTime: '11:00', endTime: '12:00', lateAfter: '11:10', room: 'Room 201',
-            status: 'closed', markedAt: null, markedStatus: null
-          },
-          {
-            id: 'sess4', subjId: 's4', subjName: 'Python Programming', code: 'IT201', color: '#00b894', icon: '🐍',
-            lecTime: '13:00', endTime: '14:00', lateAfter: '13:10', room: 'Lab 1',
-            status: 'upcoming', markedAt: null, markedStatus: null
-          },
-        ],
-        schedule: {
-          Monday: [{ subj: 'Data Structures', code: 'CS301', color: '#a29bfe', start: '09:00', end: '10:00', room: 'Room 301' },
-          { subj: 'Operating Systems', code: 'CS302', color: '#fd79a8', start: '11:00', end: '12:00', room: 'Room 201' }],
-          Tuesday: [{ subj: 'Computer Networks', code: 'CS401', color: '#74b9ff', start: '10:00', end: '11:00', room: 'Lab 2' }],
-          Wednesday: [{ subj: 'Python Programming', code: 'IT201', color: '#00b894', start: '13:00', end: '14:00', room: 'Lab 1' }],
-          Thursday: [{ subj: 'Data Structures', code: 'CS301', color: '#a29bfe', start: '09:00', end: '10:00', room: 'Room 301' },
-          { subj: 'Computer Networks', code: 'CS401', color: '#74b9ff', start: '14:00', end: '15:00', room: 'Lab 2' }],
-          Friday: [{ subj: 'Operating Systems', code: 'CS302', color: '#fd79a8', start: '11:00', end: '12:00', room: 'Room 201' },
-          { subj: 'Python Programming', code: 'IT201', color: '#00b894', start: '15:00', end: '16:00', room: 'Lab 1' }],
-        }
-      }
-    };
-
+    const API_BASE = '/api';
     let CS = null; // current student
     let scanSession = null; // session being scanned
     let regStream = null, scanStream = null;
@@ -1815,26 +1757,61 @@
     // ══════════════════════════════════════════
     // LOGIN / LOGOUT
     // ══════════════════════════════════════════
-    function doLogin() {
-      const id = document.getElementById('loginId').value.trim();
-      const pw = document.getElementById('loginPass').value.trim();
-      const err = document.getElementById('loginErr');
-      const stu = STUDENTS[id];
-      if (!stu || stu.password !== pw) { err.style.display = 'block'; return; }
-      err.style.display = 'none';
-      CS = stu;
-      document.getElementById('loginPage').style.transition = 'opacity .4s';
-      document.getElementById('loginPage').style.opacity = '0';
-      setTimeout(() => document.getElementById('loginPage').style.display = 'none', 400);
-      document.getElementById('appPage').style.display = 'block';
-      initApp();
+    async function doLogin() {
+      const username = document.getElementById('loginId').value.trim();
+      const password = document.getElementById('loginPass').value.trim();
+      const errEl = document.getElementById('loginErr');
+      
+      if (!username || !password) {
+        toast('Please enter both ID and Password', 'warn');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          errEl.style.display = 'none';
+          CS = data.student;
+          
+          // Add default structures if missing from server for now
+          if (!CS.subjects) CS.subjects = [];
+          if (!CS.history) CS.history = [];
+          if (!CS.sessions) CS.sessions = [];
+          if (!CS.streak) CS.streak = [true, true, false, true]; // Default dummy streak
+          if (!CS.schedule) CS.schedule = {};
+
+          sessionStorage.setItem('axiom_student', JSON.stringify(CS));
+
+          document.getElementById('loginPage').style.transition = 'opacity .4s';
+          document.getElementById('loginPage').style.opacity = '0';
+          setTimeout(() => {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('appPage').style.display = 'block';
+            initApp();
+          }, 400);
+        } else {
+          errEl.textContent = '❌ ' + (data.message || 'Invalid credentials');
+          errEl.style.display = 'block';
+        }
+      } catch (err) {
+        console.error('Login error:', err);
+        toast('Server unreachable. Is app.py running?', 'err');
+      }
     }
 
     document.getElementById('loginId').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('loginPass').focus(); });
     document.getElementById('loginPass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 
     function doLogout() {
-      CS = null; scanSession = null;
+      CS = null; 
+      scanSession = null;
+      sessionStorage.removeItem('axiom_student');
       stopAllStreams();
       document.getElementById('appPage').style.display = 'none';
       document.getElementById('loginPage').style.display = 'flex';
@@ -1846,14 +1823,29 @@
     // ══════════════════════════════════════════
     // INIT
     // ══════════════════════════════════════════
-    function initApp() {
+    async function initApp() {
+      // Check session if CS is null
+      if (!CS) {
+        const saved = sessionStorage.getItem('axiom_student');
+        if (saved) {
+          CS = JSON.parse(saved);
+          document.getElementById('loginPage').style.display = 'none';
+          document.getElementById('appPage').style.display = 'block';
+        } else {
+          doLogout();
+          return;
+        }
+      }
+
       const h = new Date().getHours();
       document.getElementById('timeGreet').textContent = h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening';
-      document.getElementById('chipName').textContent = CS.name.split(' ')[0];
-      document.getElementById('wName').textContent = CS.name;
-      document.getElementById('wBatch').textContent = CS.batch;
-      document.getElementById('wSem').textContent = CS.sem;
-      document.getElementById('wId').textContent = CS.id;
+      
+      const firstName = CS.name ? CS.name.split(' ')[0] : 'Student';
+      document.getElementById('chipName').textContent = firstName;
+      document.getElementById('wName').textContent = CS.name || 'Anonymous';
+      document.getElementById('wBatch').textContent = CS.branch || '—';
+      document.getElementById('wSem').textContent = CS.year || '—';
+      document.getElementById('wId').textContent = CS.roll || '—';
 
       const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
       document.getElementById('todayLbl').textContent = days[new Date().getDay()];
@@ -1865,14 +1857,35 @@
       // face setup banner
       if (!CS.faceRegistered) {
         document.getElementById('faceSetupBanner').style.display = 'flex';
+      } else {
+        document.getElementById('faceSetupBanner').style.display = 'none';
       }
+
+      // Fetch latest dashboard data from server
+      await refreshDashboardData();
 
       renderDashboard();
       populateHistFilters();
     }
 
+    async function refreshDashboardData() {
+      try {
+        const res = await fetch(`${API_BASE}/student/dashboard?id=${CS.id}`);
+        const result = await res.json();
+        if (result.success) {
+          // Merge server data into CS
+          CS.subjects = result.data.subjects || CS.subjects;
+          CS.history = result.data.history || CS.history;
+          CS.sessions = result.data.sessions || CS.sessions;
+        }
+      } catch (err) {
+        console.warn('Could not refresh dashboard data:', err);
+      }
+    }
+
     function calcStreak() {
       let s = 0;
+      if (!CS || !CS.streak) return 0;
       for (let i = CS.streak.length - 1; i >= 0; i--) {
         if (CS.streak[i]) s++; else break;
       }

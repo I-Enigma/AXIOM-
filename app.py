@@ -1,20 +1,31 @@
-from flask import Flask, request, jsonify
+import os
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import mysql.connector
 import bcrypt
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 
-# ── Change this to your MySQL password ──
-DB_PASSWORD = "root467"
+# ── Serve Static Files ──
+@app.route('/')
+def index():
+    return send_from_directory('.', 'axiom.html')
 
+@app.route('/<path:path>')
+def serve_static(path):
+    return send_from_directory('.', path)
 def get_db():
     return mysql.connector.connect(
-        host     = "localhost",
-        user     = "root",
-        password = DB_PASSWORD,
-        database = "axiom_db"
+        host     = os.getenv('DB_HOST', 'localhost'),
+        user     = os.getenv('DB_USER', 'root'),
+        password = os.getenv('DB_PASSWORD', 'root467'),
+        database = os.getenv('DB_NAME', 'axiom_db'),
+        port     = int(os.getenv('DB_PORT', 3306))
     )
 
 # ────────────────────────────────────────
@@ -32,10 +43,11 @@ def register():
     )
 
     try:
+        # Fixed column names: roll_no, department, year_level, group_section
         cur.execute("""
             INSERT INTO students
-            (first_name, last_name, email, phone, dob,
-             roll_number, branch, year, section,
+            (first_name, last_name, email, phone, date_of_birth,
+             roll_no, department, year_level, group_section,
              username, password_hash, status)
             VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,'pending')
         """, (
@@ -57,10 +69,10 @@ def register():
             "message": "Registered successfully! Awaiting teacher verification."
         })
 
-    except mysql.connector.IntegrityError:
+    except mysql.connector.IntegrityError as e:
         return jsonify({
             "success": False,
-            "message": "Email, roll number or username already exists."
+            "message": f"Integration error: {str(e)}"
         }), 400
 
     except Exception as e:
@@ -122,15 +134,97 @@ def login():
     return jsonify({
         "success": True,
         "student": {
-            "name"    : student['first_name'] + ' ' + student['last_name'],
-            "roll"    : student['roll_number'],
-            "branch"  : student['branch'],
-            "year"    : student['year'],
-            "section" : student['section'],
-            "email"   : student['email'],
-            "username": student['username']
+            "id"              : student['id'],
+            "name"            : f"{student['first_name']} {student['last_name']}",
+            "roll"            : student['roll_no'],
+            "branch"          : student['department'],
+            "year"            : student['year_level'],
+            "section"         : student['group_section'],
+            "email"           : student['email'],
+            "username"        : student['username'],
+            "faceRegistered" : bool(student['face_registered'])
         }
     })
+
+# ────────────────────────────────────────
+# STUDENT DASHBOARD — aggregated data
+# ────────────────────────────────────────
+@app.route('/api/student/dashboard', methods=['GET'])
+def student_dashboard():
+    student_id = request.args.get('id')
+    if not student_id:
+        return jsonify({"success": False, "message": "Missing student ID"}), 400
+
+    db = get_db()
+    cur = db.cursor(dictionary=True)
+
+    try:
+        # 1. Fetch Enrolled Subjects
+        cur.execute("""
+            SELECT s.id, s.subject_name AS name, s.subject_code AS code, 
+                   s.color_code AS color, s.icon_char AS icon,
+                   COALESCE(att.present_count, 0) AS present,
+                   COALESCE(att.total_sessions, 0) AS total
+            FROM enrollments e
+            JOIN subjects s ON e.subject_id = s.id
+            LEFT JOIN (
+                SELECT sub.id AS subj_id, 
+                       COUNT(r.id) AS total_sessions,
+                       SUM(CASE WHEN r.is_present = 1 THEN 1 ELSE 0 END) AS present_count
+                FROM subjects sub
+                JOIN attendance_sessions sess ON sess.session_name LIKE CONCAT('%', sub.subject_name, '%')
+                LEFT JOIN attendance_records r ON r.session_id = sess.id AND r.student_id = %s
+                GROUP BY sub.id
+            ) att ON att.subj_id = s.id
+            WHERE e.student_id = %s
+        """, (student_id, student_id))
+        subjects = cur.fetchall()
+
+        # 2. Fetch Recent History
+        cur.execute("""
+            SELECT sess.session_name AS subj, 
+                   '—' AS code, 
+                   DATE(r.marked_at) AS date,
+                   TIME_FORMAT(sess.started_at, '%%H:%%i') AS lecTime,
+                   TIME_FORMAT(r.marked_at, '%%H:%%i') AS markedAt,
+                   TIMESTAMPDIFF(MINUTE, sess.started_at, r.marked_at) AS lateBy,
+                   CASE WHEN r.is_present=1 THEN 'PRESENT' ELSE 'ABSENT' END AS status,
+                   '100%%' AS score
+            FROM attendance_records r
+            JOIN attendance_sessions sess ON r.session_id = sess.id
+            WHERE r.student_id = %s
+            ORDER BY r.marked_at DESC
+            LIMIT 10
+        """, (student_id,))
+        history = cur.fetchall()
+        for h in history:
+            if h['date']: h['date'] = str(h['date'])
+
+        # 3. Fetch Active Sessions
+        cur.execute("""
+            SELECT sess.id, s.id AS subjId, s.subject_name AS subjName, 
+                   s.subject_code AS code, s.color_code AS color, s.icon_char AS icon,
+                   TIME_FORMAT(sess.started_at, '%%H:%%i') AS lecTime,
+                   'Active' AS status
+            FROM attendance_sessions sess
+            JOIN subjects s ON sess.session_name LIKE CONCAT('%%', s.subject_name, '%%')
+            WHERE sess.is_active = 1
+        """)
+        sessions = cur.fetchall()
+
+        return jsonify({
+            "success": True,
+            "data": {
+                "subjects": subjects,
+                "history": history,
+                "sessions": sessions
+            }
+        })
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cur.close()
+        db.close()
 
 # ────────────────────────────────────────
 # GET ALL STUDENTS — for teacher dashboard
@@ -141,7 +235,7 @@ def get_students():
     cur = db.cursor(dictionary=True)
     cur.execute("""
         SELECT id, first_name, last_name, email,
-               roll_number, branch, year, section,
+               roll_no, department, year_level, group_section,
                username, status, created_at
         FROM students
         ORDER BY created_at DESC
@@ -215,9 +309,9 @@ def teacher_login():
         "success": True,
         "teacher": {
             "id"         : teacher['id'],
-            "name"       : teacher['name'],
+            "name"       : teacher['full_name'], # Corrected to match database.py
             "email"      : teacher['email'],
-            "department" : teacher['department']
+            "department" : teacher['assigned_dept'] # Corrected to match database.py
         }
     })
 
@@ -242,7 +336,7 @@ def seed_teacher():
 
     hashed = bcrypt.hashpw(b'teacher123', bcrypt.gensalt()).decode('utf-8')
     cur.execute("""
-        INSERT INTO teachers (name, email, department, password_hash)
+        INSERT INTO teachers (full_name, email, assigned_dept, password_hash)
         VALUES (%s, %s, %s, %s)
     """, ('Prof. Rajesh Kumar', 'teacher@college.edu', 'Computer Science', hashed))
     db.commit()
@@ -252,5 +346,6 @@ def seed_teacher():
 
 # ────────────────────────────────────────
 if __name__ == '__main__':
-    print("AXIOM Backend running at http://localhost:5000")
-    app.run(debug=True, port=5000)
+    port = int(os.getenv('FLASK_PORT', 5000))
+    print(f"AXIOM Backend running at http://localhost:{port}")
+    app.run(debug=True, port=port)

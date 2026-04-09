@@ -372,9 +372,13 @@ def register_live():
                 cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 220, 100), 2)
 
                 # Draw glowing hacker landmarks for the hackathon judges!
-                if hasattr(face, 'landmark_2d_106'):
+                if hasattr(face, 'landmark_2d_106') and face.landmark_2d_106 is not None:
                     for pt in face.landmark_2d_106:
                         cv2.circle(frame, (int(pt[0]), int(pt[1])), 1, (255, 255, 0), -1)
+                elif hasattr(face, 'kps') and face.kps is not None:
+                    # Fallback: draw the 5 keypoints (eyes, nose, mouth corners)
+                    for pt in face.kps:
+                        cv2.circle(frame, (int(pt[0]), int(pt[1])), 2, (255, 255, 0), -1)
 
                 # Capture embedding with delay for diversity
                 if now_t - last_capture >= REGISTER_DELAY:
@@ -422,12 +426,12 @@ def register_live():
         cv2.imshow("AXIOM — Face Registration", frame)
 
         key = cv2.waitKey(1) & 0xFF
-        if key == ord('q'):
+        if key in [ord('q'), ord('Q')]:
             print("Registration cancelled.")
             cap.release()
             cv2.destroyAllWindows()
             return
-        elif key == ord('s'):
+        elif key in [ord('s'), ord('S')]:
             if len(embeddings) < 5:
                 print(f"⚠️  Only {len(embeddings)} samples — need at least 5. Keep going!")
             else:
@@ -562,9 +566,13 @@ def mark_attendance():
             x2, y2 = min(w, x2), min(h, y2)
 
             # Draw glowing hacker landmarks for the hackathon judges!
-            if hasattr(face, 'landmark_2d_106'):
+            if hasattr(face, 'landmark_2d_106') and face.landmark_2d_106 is not None:
                 for pt in face.landmark_2d_106:
                     cv2.circle(frame, (int(pt[0]), int(pt[1])), 1, (255, 255, 0), -1)
+            elif hasattr(face, 'kps') and face.kps is not None:
+                # Fallback: draw the 5 keypoints (eyes, nose, mouth corners)
+                for pt in face.kps:
+                    cv2.circle(frame, (int(pt[0]), int(pt[1])), 2, (255, 255, 0), -1)
 
             live_embedding = face.normed_embedding
             if live_embedding is None:
@@ -743,7 +751,7 @@ def mark_attendance():
         cv2.imshow("AXIOM — Attendance System", frame)
 
         key = cv2.waitKey(1) & 0xFF
-        if key == ord('q'):
+        if key in [ord('q'), ord('Q')]:
             print("\n❌ Session cancelled. Removing saved data...")
             try:
                 wb = load_workbook(ATTENDANCE_FILE)
@@ -761,7 +769,7 @@ def mark_attendance():
             cap.release()
             cv2.destroyAllWindows()
             return
-        elif key == ord('s'):
+        elif key in [ord('s'), ord('S')]:
             break
 
     cap.release()
@@ -886,7 +894,9 @@ def quick_test():
             # Score against all registered
             scores = []
             for pname, person in data.items():
-                stored = person["embedding"]
+                stored = person.get("embedding")
+                if stored is None:
+                    continue  # skip old profiles without ArcFace embedding
                 if isinstance(stored, list):
                     stored = np.array(stored, dtype=np.float32)
                 sim = cosine_similarity(stored, live_emb)
@@ -921,7 +931,8 @@ def quick_test():
                             0.4, scolor, 1)
 
         cv2.imshow("AXIOM — Quick Test", frame)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        key = cv2.waitKey(1) & 0xFF
+        if key in [ord('q'), ord('Q')]:
             break
 
     cap.release()
